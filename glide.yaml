@@ -1,0 +1,6 @@
+package: github.com/krzysztof-gzocha/pingor
+import:
+- package: github.com/Sirupsen/logrus
+  version: ^1.0.5
+- package: github.com/pkg/errors
+  version: ^0.8.0
