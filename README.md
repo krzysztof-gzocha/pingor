@@ -27,3 +27,21 @@ ping:
     - 9.9.9.9
     - 1.1.1.1
 ```
+
+# Example systemd config
+File `/etc/systemd/system/pingor.service`
+```
+[Unit]
+Description=pinGOr: checking internet connectivity
+After=network.target
+
+[Service]
+Type=simple
+User=somebody # EDIT THIS
+WorkingDirectory=/full/path/to/pingor/dir # EDIT THIS
+ExecStart=/full/path/to/pingor/exec # EDIT THIS
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
+```
