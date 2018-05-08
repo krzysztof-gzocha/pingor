@@ -28,8 +28,7 @@ func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
 	}
 
 	if r.previousResult == nil {
-		r.previousResult = result
-		return
+		r.prepareFirstPreviousResult(result)
 	}
 
 	if !r.previousResult.IsSuccess() && result.IsSuccess() {
@@ -38,20 +37,30 @@ func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
 			r.lastConnectionDrop.Format(time.RFC3339),
 			time.Now().Sub(r.lastConnectionDrop).String(),
 		)
-		logrus.Warn(r.printer(result))
-
+		r.printResult(result)
 		r.previousResult = result
 	}
 
 	if r.previousResult.IsSuccess() && !result.IsSuccess() {
 		logrus.Warnf("Connection was dropped!")
-		output, err := r.printer(result)
-		if err != nil {
-			logrus.Errorf("Could not encode the result because of: %s", err.Error())
-		} else {
-			logrus.Warn(output)
-		}
+		r.printResult(result)
 		r.previousResult = result
+		r.lastConnectionDrop = time.Now()
+	}
+}
+
+func (r *Reconnection) printResult(result check.ResultInterface) {
+	output, err := r.printer(result)
+	if err != nil {
+		logrus.Errorf("Could not encode the result because of: %s", err.Error())
+	} else {
+		logrus.Warn(output)
+	}
+}
+
+func (r *Reconnection) prepareFirstPreviousResult(result check.ResultInterface) {
+	r.previousResult = result
+	if !r.previousResult.IsSuccess() {
 		r.lastConnectionDrop = time.Now()
 	}
 }

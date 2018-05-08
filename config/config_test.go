@@ -6,7 +6,15 @@ import (
 	"net"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
+
+func TestLoad(t *testing.T) {
+	cfg, err := Load("../config.yaml")
+	assert.Nil(t, err)
+	assert.NotZero(t, cfg.SuccessRateThreshold)
+}
 
 func TestTransformation(t *testing.T) {
 	rawConfig := rawConfig{
@@ -20,29 +28,12 @@ func TestTransformation(t *testing.T) {
 	}
 
 	config, err := transformFromRawConfig(rawConfig)
-	if err != nil {
-		t.Fatalf("Transformation failed: %s", err.Error())
-	}
-
-	if config.SingleCheckTimeout != time.Minute*10 {
-		t.Fatalf("SingleCheckTimeout was parsed incorectly")
-	}
-
-	if config.SuccessTimeThreshold != time.Second*10 {
-		t.Fatalf("SuccessTimeThreshold was parsed incorectly")
-	}
-
-	if config.MinimalCheckingPeriod != time.Millisecond*100 {
-		t.Fatalf("MinimalCheckingPeriod was parsed incorectly")
-	}
-
-	if config.MaximalCheckingPeriod != time.Hour {
-		t.Fatalf("MaximalCheckingPeriod was parsed incorectly")
-	}
-
-	if len(config.Ping.IPs) != len(rawConfig.RawPing.IpStrings) {
-		t.Fatalf("Transformed ping IPs: %d, raw IPs: %d", len(config.Ping.IPs), len(rawConfig.RawPing.IpStrings))
-	}
+	assert.Nil(t, err)
+	assert.Equal(t, config.SingleCheckTimeout, time.Minute*10)
+	assert.Equal(t, config.SuccessTimeThreshold, time.Second*10)
+	assert.Equal(t, config.MinimalCheckingPeriod, time.Millisecond*100)
+	assert.Equal(t, config.MaximalCheckingPeriod, time.Hour)
+	assert.Len(t, config.Ping.IPs, len(rawConfig.RawPing.IpStrings))
 }
 
 func TestPingTransformation(t *testing.T) {
@@ -52,15 +43,7 @@ func TestPingTransformation(t *testing.T) {
 
 	pingConfig := transformFromRawPingConfig(rawPingConfig)
 
-	if len(pingConfig.IPs) != len(rawPingConfig.IpStrings) {
-		t.Fatalf("Transformed ping IPs: %d, raw IPs: %d", len(pingConfig.IPs), len(rawPingConfig.IpStrings))
-	}
-
-	if !pingConfig.IPs[0].Equal(net.IPv4(1, 1, 1, 1)) {
-		t.Fatalf("First IP is badly parsed: %s", pingConfig.IPs[0].String())
-	}
-
-	if !pingConfig.IPs[1].Equal(net.IPv4(182, 123, 231, 23)) {
-		t.Fatalf("Second IP is badly parsed: %s", pingConfig.IPs[1].String())
-	}
+	assert.Len(t, pingConfig.IPs, len(rawPingConfig.IpStrings))
+	assert.True(t, pingConfig.IPs[0].Equal(net.IPv4(1, 1, 1, 1)))
+	assert.True(t, pingConfig.IPs[1].Equal(net.IPv4(182, 123, 231, 23)))
 }

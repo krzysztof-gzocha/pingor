@@ -3,21 +3,21 @@ package check
 import (
 	"context"
 	"fmt"
-	"net"
-
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/krzysztof-gzocha/pingor/dns"
 )
 
 // DNSChecker will try to resolve provided hosts into IPs in order to check the connection to DNS
 type DNSChecker struct {
+	dns   dns.DnsInterface
 	hosts []string
 }
 
 // NewDNSChecker will return new instance of DNSChecker
-func NewDNSChecker(hosts ...string) DNSChecker {
-	return DNSChecker{hosts: hosts}
+func NewDNSChecker(dns dns.DnsInterface, hosts ...string) DNSChecker {
+	return DNSChecker{dns: dns, hosts: hosts}
 }
 
 // Check will try to resolve provided hosts into IPs in order to check the connection to DNS.
@@ -32,9 +32,8 @@ func (c DNSChecker) Check(ctx context.Context) ResultInterface {
 		result := Result{Success: true}
 		logrus.Debugf("DNSChecker: starting to check: %s", host)
 
-		timeStart := time.Now()
-		_, err := net.ResolveIPAddr("ip4:icmp", host)
-		result.Time = time.Now().Sub(timeStart)
+		dnsResult, err := c.dns.ResolveHost(host)
+		result.Time = dnsResult.Time
 		result.Message = fmt.Sprintf("%T:%s", c, host)
 		result.SuccessRate = 1
 		if err != nil {

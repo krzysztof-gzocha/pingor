@@ -62,7 +62,7 @@ func (c MultipleChecker) Check(ctx context.Context) ResultInterface {
 			successRate += subRequest.GetSuccessRate()
 			totalTime += subRequest.GetTime()
 		}
-		overallResult.SuccessRate = successRate / float32(len(overallResult.SubResults))
+		overallResult.SuccessRate = float32(successRate / float32(len(overallResult.SubResults)))
 		overallResult.Time = totalTime / time.Duration(len(overallResult.SubResults))
 	}
 

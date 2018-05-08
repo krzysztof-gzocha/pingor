@@ -7,18 +7,20 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/check"
 	"github.com/krzysztof-gzocha/pingor/config"
+	"github.com/krzysztof-gzocha/pingor/dns"
 	"github.com/krzysztof-gzocha/pingor/event"
+	"github.com/krzysztof-gzocha/pingor/ping"
 	"github.com/krzysztof-gzocha/pingor/subscriber"
 )
 
 func main() {
 	// CLI Flags
-	verboseLevel := flag.Bool("debug", false, "Show debug level logs")
+	debugLevel := flag.Bool("debug", false, "Show debug level logs")
 	configFile := flag.String("config", "config.yaml", "Specify config file name")
 	flag.Parse()
 
 	// Configs
-	configureLogLevel(*verboseLevel)
+	configureLogLevel(*debugLevel)
 	cfg, err := config.Load(*configFile)
 	if err != nil {
 		logrus.Fatalf("Could not load config: %s", err.Error())
@@ -35,8 +37,8 @@ func main() {
 		eventDispatcher,
 		check.NewMultipleChecker(
 			cfg.SingleCheckTimeout,
-			check.NewPingChecker(cfg.Ping.IPs...),
-			check.NewDNSChecker(cfg.Dns.Hosts...),
+			check.NewPingChecker(ping.PingCommand{}, cfg.Ping.IPs...),
+			check.NewDNSChecker(dns.Dns{}, cfg.Dns.Hosts...),
 		),
 		cfg.SuccessRateThreshold,
 		cfg.SuccessTimeThreshold,
@@ -49,7 +51,7 @@ func main() {
 }
 
 func configureLogLevel(verboseLevel bool) {
-	logrus.SetLevel(logrus.WarnLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 	if verboseLevel {
 		logrus.SetLevel(logrus.DebugLevel)
 	}

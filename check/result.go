@@ -1,6 +1,7 @@
 package check
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -15,11 +16,27 @@ type ResultInterface interface {
 
 // Result is main data transfer object used to store all the results from checkers
 type Result struct {
-	Success     bool `json:"omitempty"`
-	SuccessRate float32
-	Time        time.Duration
-	Message     string            `json:"omitempty"`
-	SubResults  []ResultInterface `json:"omitempty"`
+	Success     bool              `json:"success,omitempty"`
+	SuccessRate float32           `json:"success_rate"`
+	Time        time.Duration     `json:"time"`
+	Message     string            `json:"message,omitempty"`
+	SubResults  []ResultInterface `json:"sub_results,omitempty"`
+}
+
+func (r Result) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Success     bool              `json:"success,omitempty"`
+		SuccessRate float32           `json:"success_rate"`
+		Time        string            `json:"time"`
+		Message     string            `json:"message,omitempty"`
+		SubResults  []ResultInterface `json:"sub_results,omitempty"`
+	}{
+		Success:     r.Success,
+		SuccessRate: r.SuccessRate,
+		Time:        r.Time.String(),
+		Message:     r.Message,
+		SubResults:  r.SubResults,
+	})
 }
 
 // IsSuccess will return true if connection check was successful

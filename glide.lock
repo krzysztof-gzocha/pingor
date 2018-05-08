@@ -1,0 +1,25 @@
+hash: 036f200ebf7beccdfda8e4edad0acc9834ed07bc6e99e05eac4f37873b9f6c66
+updated: 2018-05-08T08:45:08.896638828+02:00
+imports:
+- name: github.com/BurntSushi/toml
+  version: a368813c5e648fee92e5f6c30e3944ff9d5e8895
+- name: github.com/jinzhu/configor
+  version: ec34f328956f53dfbd06e9f5306e37e6943443c3
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/Sirupsen/logrus
+  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+- name: github.com/stretchr/testify
+  version: 12b6f73e6084dad08a7c6e575284b177ecafbc71
+- name: golang.org/x/crypto
+  version: 4ec37c66abab2c7e02ae775328b2ff001c3f025a
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: 686000749eaec0b8855b8eef5336cf63899fe51d
+  subpackages:
+  - unix
+  - windows
+- name: gopkg.in/yaml.v2
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+testImports: []

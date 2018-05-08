@@ -44,13 +44,21 @@ func NewPeriodicCheckerWrapper(
 
 // Check should be used to actually start checking process. In order to kill it, you have to kill it's context.
 func (c PeriodicCheckerWrapper) Check(ctx context.Context) ResultInterface {
+	c.periodicCheck(ctx)
+
+	return Result{}
+}
+
+// periodicCheck will run periodic checks on provided checker.
+// It's implemented only to get rid of dead code in Check method
+func (c PeriodicCheckerWrapper) periodicCheck(ctx context.Context) {
 	currentPeriod := c.minimalCheckingPeriod
 	for {
 		logrus.Debugf("Waiting for %s before next check", currentPeriod)
 		select {
 		case <-ctx.Done():
 			logrus.Debug("PeriodicChecker: exit")
-			return Result{}
+			return
 		case <-time.After(currentPeriod):
 		}
 
@@ -58,8 +66,6 @@ func (c PeriodicCheckerWrapper) Check(ctx context.Context) ResultInterface {
 		c.eventDispatcher.Dispatch(ConnectionCheckEventName, result)
 		currentPeriod = c.newPeriod(currentPeriod, result)
 	}
-
-	return Result{}
 }
 
 func (c PeriodicCheckerWrapper) newPeriod(currentPeriod time.Duration, result ResultInterface) time.Duration {

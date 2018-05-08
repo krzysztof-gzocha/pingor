@@ -14,26 +14,27 @@ import (
 
 // PingChecker will run 'ping' command on underlying system to check internet connection and interpret it's response
 type PingChecker struct {
-	ips []net.IP
+	ping ping.PingInterface
+	ips  []net.IP
 }
 
 // NewPingChecker will return new instance of PingChecker
-func NewPingChecker(ips ...net.IP) PingChecker {
-	return PingChecker{ips: ips}
+func NewPingChecker(ping ping.PingInterface, ips ...net.IP) PingChecker {
+	return PingChecker{ping: ping, ips: ips}
 }
 
 // Check will run 'ping' command on underlying system to check internet connection and interpret it's response
 // Result's time is average time of all the tests.
 func (p PingChecker) Check(ctx context.Context) ResultInterface {
 	if len(p.ips) == 0 {
-		return Result{}
+		return Result{Success: false, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	}
 
 	overallResult := Result{Success: true, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	for _, ip := range p.ips {
 		result := Result{Success: true}
 		logrus.Debugf("PingChecker: starting to check %s", ip.String())
-		pingResult, err := ping.Ping(ctx, ip)
+		pingResult, err := p.ping.Ping(ctx, ip)
 		result.Message = fmt.Sprintf("%T:%s", p, ip.String())
 		if err != nil {
 			errMsg := fmt.Sprintf("%T:%s: %s", p, ip.String(), err.Error())
@@ -45,7 +46,7 @@ func (p PingChecker) Check(ctx context.Context) ResultInterface {
 			result.Success = false
 		}
 		if pingResult.PacketsReceived > 0 {
-			result.SuccessRate = float32(pingResult.PacketsSent) / float32(pingResult.PacketsReceived)
+			result.SuccessRate = float32(pingResult.PacketsReceived) / float32(pingResult.PacketsSent)
 		}
 
 		result.Time = pingResult.Time
