@@ -67,5 +67,5 @@ All ideas and pull requests are welcomed and appreciated :)
 If you have any problem with usage don't hesitate to create an issue, we can figure your problem out together.
 
 # Author
-Krzysztof Gzocha
+Krzysztof Gzocha  
 [![](https://img.shields.io/badge/Twitter-%40kgzocha-blue.svg)](https://twitter.com/kgzocha)
