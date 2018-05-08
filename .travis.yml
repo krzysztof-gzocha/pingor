@@ -1,13 +1,12 @@
 language: go
+install: true
 go:
-  - "1.8"
   - "1.9"
-  - "1.10"
-  - master
+  - "1.10.x"
 
 before_install:
   - curl https://glide.sh/get | sh
   - glide install
 
 script:
-  - go test $(glide nv) -cover
+  - go test -tags unit ./... -cover
