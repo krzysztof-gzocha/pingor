@@ -53,7 +53,7 @@ func (p PingChecker) Check(ctx context.Context) ResultInterface {
 		overallResult.SubResults = append(overallResult.SubResults, result)
 	}
 
-	var successRates float32 = 0
+	var successRates float32
 	for _, subResult := range overallResult.SubResults {
 		successRates += subResult.GetSuccessRate()
 		if !subResult.IsSuccess() {

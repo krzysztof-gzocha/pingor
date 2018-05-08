@@ -36,6 +36,7 @@ func (r Result) SuccessRate() float32 {
 	return float32(r.PacketsSent) / float32(r.PacketsReceived)
 }
 
+// PingCommand is service that will call ping command on the host and interpret it's response
 type PingCommand struct{}
 
 // Ping will run ping command on the host OS.

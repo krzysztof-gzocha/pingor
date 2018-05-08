@@ -46,7 +46,7 @@ func (c DNSChecker) Check(ctx context.Context) ResultInterface {
 		overallResult.SubResults = append(overallResult.SubResults, result)
 	}
 
-	var successResults float32 = 0
+	var successResults float32
 	var totalTime time.Duration
 	for _, subresult := range overallResult.SubResults {
 		if subresult.IsSuccess() {

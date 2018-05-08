@@ -23,6 +23,7 @@ type Result struct {
 	SubResults  []ResultInterface `json:"sub_results,omitempty"`
 }
 
+// MarshalJSON will encode Result into JSON with time parsed into string
 func (r Result) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Success     bool              `json:"success,omitempty"`
@@ -59,7 +60,7 @@ func (r Result) GetMessage() string {
 	return r.Message
 }
 
-// SubResults will return all (if any) sub-results that were combined into this object.
+// GetSubResults will return all (if any) sub-results that were combined into this object.
 // Might be useful for human-readable reports
 func (r Result) GetSubResults() []ResultInterface {
 	return r.SubResults
