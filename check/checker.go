@@ -57,7 +57,7 @@ func (c MultipleChecker) Check(ctx context.Context) ResultInterface {
 
 	var totalTime time.Duration
 	if len(overallResult.SubResults) > 0 {
-		var successRate float32 = 0
+		var successRate float32
 		for _, subRequest := range overallResult.SubResults {
 			successRate += subRequest.GetSuccessRate()
 			totalTime += subRequest.GetTime()
