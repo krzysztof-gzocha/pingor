@@ -1,40 +1,48 @@
 [![Build Status](https://travis-ci.org/krzysztof-gzocha/pingor.svg?branch=master)](https://travis-ci.org/krzysztof-gzocha/pingor)
 [![Go Report Card](https://goreportcard.com/badge/github.com/krzysztof-gzocha/pingor)](https://goreportcard.com/report/github.com/krzysztof-gzocha/pingor)
-# pingor
-Create simple logs for connection monitoring with Golang
+# pinGOr
+Logs for connection monitoring with Golang.
+Run pinGOr and see it's logs to know if your internet connection was interrupted or not.
+It's not supporting any database or reporting mechanism yet, but it's architecture is easy to add new features.
 
 # Usage
+In order to build the executable simply run:
 ```
-go build && ./pingor -debug -config config.yaml
+go build
+```
+In order to run the executable:
+```
+./pingor -debug -config config.yaml
 ```
 
 # Config
 ```
-success_rate_threshold: 0.74
-success_time_threshold: 20s
-single_check_timeout: 10s
-minimal_checking_period: 1m
-maximal_checking_period: 30m
+success_rate_threshold: 0.74  # rate of successfull sub-checks to mark whole check as successfull
+success_time_threshold: 5s    # Max average time of sub-checks to mark whole check as successfull
+single_check_timeout: 10s     # Timeout for single sub-check
+minimal_checking_period: 1m   # Minimal, starting period for periodic checks. Will double after success
+maximal_checking_period: 30m  # Maximal period for periodic checks
 dns:
-  hosts:
+  hosts:  # Hosts to resolve in order to confirm connection to DNS is working
     - wp.pl
     - onet.pl
     - google.com
     - upc.pl
     - mbank.pl
 ping:
-  ips:
+  ips:   # IPs to ping in order to confirm connection is working
     - 8.8.8.8
     - 8.8.4.4
     - 9.9.9.9
     - 1.1.1.1
 ```
 
-# Example systemd config
-File `/etc/systemd/system/pingor.service`
+# Recommended usage
+Recommended usage is by adding pinGOr to [systemd](https://www.tecmint.com/create-new-service-units-in-systemd/).
+Below you can see example `pingor.service` file, that can be helpful
 ```
 [Unit]
-Description=pinGOr: checking internet connectivity
+Description=pinGOr: logging internet connectivity
 After=network.target
 
 [Service]
