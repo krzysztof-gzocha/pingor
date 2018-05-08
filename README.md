@@ -8,11 +8,17 @@ It's not supporting any database or reporting mechanism yet, but it's architectu
 # Usage
 In order to build the executable simply run:
 ```
+curl https://glide.sh/get | sh
+glide install
 go build
 ```
 In order to run the executable:
 ```
 ./pingor -debug -config config.yaml
+```
+In order to test it:
+```
+go test ./... -tags unit -cover
 ```
 
 # Config
@@ -55,3 +61,11 @@ Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 ```
+
+### Contributing
+All ideas and pull requests are welcomed and appreciated :)
+If you have any problem with usage don't hesitate to create an issue, we can figure your problem out together.
+
+# Author
+Krzysztof Gzocha
+[![](https://img.shields.io/badge/Twitter-%40kgzocha-blue.svg)](https://twitter.com/kgzocha)
