@@ -29,23 +29,34 @@ func (c DNSChecker) Check(ctx context.Context) ResultInterface {
 
 	overallResult := Result{Success: true, Message: fmt.Sprintf("Checking DNS with %d hosts", len(c.hosts))}
 	for _, host := range c.hosts {
-		result := Result{Success: true}
-		logrus.Debugf("DNSChecker: starting to check: %s", host)
-
-		dnsResult, err := c.dns.ResolveHost(host)
-		result.Time = dnsResult.Time
-		result.Message = fmt.Sprintf("%T:%s", c, host)
-		result.SuccessRate = 1
-		if err != nil {
-			errMsg := fmt.Sprintf("%T:%s: Failed to resolve host: %s", c, host, err.Error())
-			result.Success = false
-			result.Message = errMsg
-			result.SuccessRate = 0
-		}
-
-		overallResult.SubResults = append(overallResult.SubResults, result)
+		overallResult.SubResults = append(overallResult.SubResults, c.singleCheck(ctx, host))
 	}
 
+	overallResult = c.calculateOverallChecker(overallResult)
+	logrus.Debugf("DNSChecker: success rate: %.2f", overallResult.SuccessRate*100)
+
+	return overallResult
+}
+
+func (c DNSChecker) singleCheck(ctx context.Context, host string) Result {
+	result := Result{Success: true}
+	logrus.Debugf("DNSChecker: starting to check: %s", host)
+
+	dnsResult, err := c.dns.ResolveHost(host)
+	result.Time = dnsResult.Time
+	result.Message = fmt.Sprintf("%T:%s", c, host)
+	result.SuccessRate = 1
+	if err != nil {
+		errMsg := fmt.Sprintf("%T:%s: Failed to resolve host: %s", c, host, err.Error())
+		result.Success = false
+		result.Message = errMsg
+		result.SuccessRate = 0
+	}
+
+	return result
+}
+
+func (c DNSChecker) calculateOverallChecker(overallResult Result) Result {
 	var successResults float32
 	var totalTime time.Duration
 	for _, subresult := range overallResult.SubResults {
@@ -59,7 +70,6 @@ func (c DNSChecker) Check(ctx context.Context) ResultInterface {
 
 	overallResult.SuccessRate = successResults / float32(len(c.hosts))
 	overallResult.Time = totalTime / time.Duration(len(c.hosts))
-	logrus.Debugf("DNSChecker: success rate: %.2f", overallResult.SuccessRate*100)
 
 	return overallResult
 }

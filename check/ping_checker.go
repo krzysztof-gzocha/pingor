@@ -32,27 +32,38 @@ func (p PingChecker) Check(ctx context.Context) ResultInterface {
 
 	overallResult := Result{Success: true, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	for _, ip := range p.ips {
-		result := Result{Success: true}
-		logrus.Debugf("PingChecker: starting to check %s", ip.String())
-		pingResult, err := p.ping.Ping(ctx, ip)
-		result.Message = fmt.Sprintf("%T:%s", p, ip.String())
-		if err != nil {
-			errMsg := fmt.Sprintf("%T:%s: %s", p, ip.String(), err.Error())
-			result.Message = errMsg
-			result.Success = false
-		}
-
-		if !pingResult.AtLeastOneSuccess() {
-			result.Success = false
-		}
-		if pingResult.PacketsReceived > 0 {
-			result.SuccessRate = float32(pingResult.PacketsReceived) / float32(pingResult.PacketsSent)
-		}
-
-		result.Time = pingResult.Time
+		result := p.singleCheck(ctx, ip)
 		overallResult.SubResults = append(overallResult.SubResults, result)
 	}
 
+	return p.calculateOverallResult(overallResult)
+}
+
+func (p PingChecker) singleCheck(ctx context.Context, ip net.IP) Result {
+	result := Result{Success: true}
+	logrus.Debugf("PingChecker: starting to check %s", ip.String())
+	pingResult, err := p.ping.Ping(ctx, ip)
+	result.Message = fmt.Sprintf("%T:%s", p, ip.String())
+	if err != nil {
+		errMsg := fmt.Sprintf("%T:%s: %s", p, ip.String(), err.Error())
+		result.Message = errMsg
+		result.Success = false
+	}
+
+	if !pingResult.AtLeastOneSuccess() {
+		result.Success = false
+	}
+
+	if pingResult.PacketsReceived > 0 {
+		result.SuccessRate = float32(pingResult.PacketsReceived) / float32(pingResult.PacketsSent)
+	}
+
+	result.Time = pingResult.Time
+
+	return result
+}
+
+func (p PingChecker) calculateOverallResult(overallResult Result) Result {
 	var successRates float32
 	for _, subResult := range overallResult.SubResults {
 		successRates += subResult.GetSuccessRate()
