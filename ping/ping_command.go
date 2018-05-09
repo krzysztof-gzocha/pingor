@@ -44,7 +44,7 @@ func (p PingCommand) Ping(ctx context.Context, ip net.IP) (Result, error) {
 	cmd := exec.CommandContext(ctx, "ping", "-q", "-c", "3", ip.String())
 	byteOutput, err := cmd.Output()
 	if err != nil {
-		return Result{}, errors.Wrap(err, "Error occurred while reading the output of ping command")
+		return Result{}, errors.Wrapf(err, "Error occurred while reading the output of ping command: %s", string(byteOutput))
 	}
 
 	result, err := p.parseOutput(byteOutput)
