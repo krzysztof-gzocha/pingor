@@ -9,4 +9,7 @@ before_install:
   - glide install
 
 script:
-  - go test -tags unit ./... -cover
+  - ./coverage.sh
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
