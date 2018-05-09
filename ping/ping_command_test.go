@@ -13,7 +13,7 @@ import (
 func TestPingCommand_Ping(t *testing.T) {
 	pc := PingCommand{}
 	assert.Implements(t, (*PingInterface)(nil), pc)
-	result, err := pc.Ping(context.TODO(), net.ParseIP("192.168.1.1"))
+	result, err := pc.Ping(context.TODO(), net.ParseIP("8.8.8.8"))
 	assert.NoError(t, err)
 	assert.NotZero(t, result.Time)
 	assert.True(t, result.PacketsSent > 0)

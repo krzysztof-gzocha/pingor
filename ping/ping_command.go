@@ -41,7 +41,7 @@ type PingCommand struct{}
 
 // Ping will run ping command on the host OS.
 func (p PingCommand) Ping(ctx context.Context, ip net.IP) (Result, error) {
-	cmd := exec.CommandContext(ctx, "ping", "-q", "-c", "3", ip.String())
+	cmd := exec.CommandContext(ctx, "ping", "-c", "1", ip.String())
 	byteOutput, err := cmd.Output()
 	if err != nil {
 		return Result{}, errors.Wrapf(err, "Error occurred while reading the output of ping command: %s", string(byteOutput))
@@ -78,7 +78,7 @@ func (p PingCommand) parseOutput(output []byte) (Result, error) {
 		return Result{}, errors.Wrapf(err, "Could not convert packets received '%s' to int", found[2])
 	}
 
-	timeReg, err := regexp.Compile(`rtt min/avg/max/mdev = [\d\.]{1,8}/([\d\.]{1,8})/[\d\.]{1,8}/[\d\.]{1,8} ms`)
+	timeReg, err := regexp.Compile(`time=([\d\.]{1,8}) ms`)
 	if err != nil {
 		return Result{}, err
 	}
