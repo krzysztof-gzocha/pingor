@@ -78,7 +78,7 @@ func (p PingCommand) parseOutput(output []byte) (Result, error) {
 		return Result{}, errors.Wrapf(err, "Could not convert packets received '%s' to int", found[2])
 	}
 
-	timeReg, err := regexp.Compile(`rtt min/avg/max/mdev = [\d\.]{1,6}/([\d\.]{1,6})/[\d\.]{1,6}/[\d\.]{1,6} ms`)
+	timeReg, err := regexp.Compile(`rtt min/avg/max/mdev = [\d\.]{1,8}/([\d\.]{1,8})/[\d\.]{1,8}/[\d\.]{1,8} ms`)
 	if err != nil {
 		return Result{}, err
 	}

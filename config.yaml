@@ -1,8 +1,8 @@
 success_rate_threshold: 0.74
 success_time_threshold: 1s
 single_check_timeout: 10s
-minimal_checking_period: 5s
-maximal_checking_period: 10s
+minimal_checking_period: 1m
+maximal_checking_period: 1h
 dns:
   hosts:
     - wp.pl
