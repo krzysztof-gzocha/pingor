@@ -10,7 +10,8 @@ It's not supporting any database or reporting mechanism yet, but it's architectu
 # How?
 PinGOr will read provided config and try to:
 - resolve provided host names to IPs,
-- run ping command on the host to specified IPs.
+- run ping command on the host to specified IPs.  
+
 It will start checking the connection after configured minimal checking period and if the connection will be ok the period will be doubled.
 When connection checks will drop below configured success rate threshold, then the connection will be marked as "dropped" and proper log will be created.
 
