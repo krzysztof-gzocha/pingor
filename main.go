@@ -37,8 +37,7 @@ func main() {
 		eventDispatcher,
 		check.NewMultipleChecker(
 			cfg.SingleCheckTimeout,
-			check.NewPingChecker(ping.PingCommand{}, cfg.Ping.IPs...),
-			check.NewDNSChecker(dns.Dns{}, cfg.Dns.Hosts...),
+			getCheckers(cfg)...,
 		),
 		cfg.SuccessRateThreshold,
 		cfg.SuccessTimeThreshold,
@@ -48,6 +47,20 @@ func main() {
 
 	// Main logic
 	checker.Check(context.Background())
+}
+
+func getCheckers(cfg config.Config) []check.CheckerInterface {
+	checkers := make([]check.CheckerInterface, 0)
+
+	if len(cfg.Ping.IPs) > 0 {
+		checkers = append(checkers, check.NewPingChecker(ping.PingCommand{}, cfg.Ping.IPs...))
+	}
+
+	if len(cfg.Dns.Hosts) > 0 {
+		checkers = append(checkers, check.NewDNSChecker(dns.Dns{}, cfg.Dns.Hosts...))
+	}
+
+	return checkers
 }
 
 func configureLogLevel(verboseLevel bool) {
