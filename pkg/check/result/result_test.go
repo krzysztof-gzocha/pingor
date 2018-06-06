@@ -10,6 +10,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestResult_IsSuccess(t *testing.T) {
+	res := Result{Success: true}
+	assert.True(t, res.IsSuccess())
+}
+
+func TestResult_GetMessage(t *testing.T) {
+	res := Result{Message: "msg"}
+	assert.Equal(t, "msg", res.GetMessage())
+}
+
+func TestResult_GetSuccessRate(t *testing.T) {
+	res := Result{SuccessRate: 0.6}
+	assert.Equal(t, float32(0.6), res.GetSuccessRate())
+}
+
+func TestResult_GetTime(t *testing.T) {
+	res := Result{Time: time.Second}
+	assert.Equal(t, time.Second, res.GetTime())
+}
+
+func TestResult_GetSubResults(t *testing.T) {
+	res := Result{SubResults: []ResultInterface{Result{Success: true}, Result{Success: true}}}
+	assert.Len(t, res.GetSubResults(), 2)
+}
+
 func TestResult_MarshalJSON(t *testing.T) {
 	originalResult := Result{
 		Message:     "Message",
