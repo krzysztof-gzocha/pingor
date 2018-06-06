@@ -36,11 +36,11 @@ func (r Result) SuccessRate() float32 {
 	return float32(r.PacketsSent) / float32(r.PacketsReceived)
 }
 
-// PingCommand is service that will call ping command on the host and interpret it's response
-type PingCommand struct{}
+// Command is service that will call ping command on the host and interpret it's response
+type Command struct{}
 
 // Ping will run ping command on the host OS.
-func (p PingCommand) Ping(ctx context.Context, ip net.IP) (Result, error) {
+func (p Command) Ping(ctx context.Context, ip net.IP) (Result, error) {
 	cmd := exec.CommandContext(ctx, "ping", "-c", "1", ip.String())
 	byteOutput, err := cmd.Output()
 	if err != nil {
@@ -56,7 +56,7 @@ func (p PingCommand) Ping(ctx context.Context, ip net.IP) (Result, error) {
 	return result, nil
 }
 
-func (p PingCommand) parseOutput(output []byte) (Result, error) {
+func (p Command) parseOutput(output []byte) (Result, error) {
 	stringOutput := string(output)
 	reg, err := regexp.Compile(`(\d{1,4}) packets transmitted, (\d{1,4}) received`)
 	if err != nil {

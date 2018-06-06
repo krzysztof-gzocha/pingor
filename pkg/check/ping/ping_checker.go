@@ -1,4 +1,4 @@
-package check
+package ping
 
 import (
 	"context"
@@ -9,28 +9,28 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/krzysztof-gzocha/pingor/ping"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 )
 
-// PingChecker will run 'ping' command on underlying system to check internet connection and interpret it's response
-type PingChecker struct {
-	ping ping.PingInterface
+// Checker will run 'ping' command on underlying system to check internet connection and interpret it's response
+type Checker struct {
+	ping PingerInterface
 	ips  []net.IP
 }
 
-// NewPingChecker will return new instance of PingChecker
-func NewPingChecker(ping ping.PingInterface, ips ...net.IP) PingChecker {
-	return PingChecker{ping: ping, ips: ips}
+// NewChecker will return new instance of Checker
+func NewChecker(ping PingerInterface, ips ...net.IP) Checker {
+	return Checker{ping: ping, ips: ips}
 }
 
 // Check will run 'ping' command on underlying system to check internet connection and interpret it's response
 // Result's time is average time of all the tests.
-func (p PingChecker) Check(ctx context.Context) ResultInterface {
+func (p Checker) Check(ctx context.Context) result.ResultInterface {
 	if len(p.ips) == 0 {
-		return Result{Success: false, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
+		return result.Result{Success: false, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	}
 
-	overallResult := Result{Success: true, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
+	overallResult := result.Result{Success: true, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	for _, ip := range p.ips {
 		result := p.singleCheck(ctx, ip)
 		overallResult.SubResults = append(overallResult.SubResults, result)
@@ -39,9 +39,9 @@ func (p PingChecker) Check(ctx context.Context) ResultInterface {
 	return p.calculateOverallResult(overallResult)
 }
 
-func (p PingChecker) singleCheck(ctx context.Context, ip net.IP) Result {
-	result := Result{Success: true}
-	logrus.Debugf("PingChecker: starting to check %s", ip.String())
+func (p Checker) singleCheck(ctx context.Context, ip net.IP) result.Result {
+	result := result.Result{Success: true}
+	logrus.Debugf("Checker: starting to check %s", ip.String())
 	pingResult, err := p.ping.Ping(ctx, ip)
 	result.Message = fmt.Sprintf("%T:%s", p, ip.String())
 	if err != nil {
@@ -63,7 +63,7 @@ func (p PingChecker) singleCheck(ctx context.Context, ip net.IP) Result {
 	return result
 }
 
-func (p PingChecker) calculateOverallResult(overallResult Result) Result {
+func (p Checker) calculateOverallResult(overallResult result.Result) result.Result {
 	var successRates float32
 	for _, subResult := range overallResult.SubResults {
 		successRates += subResult.GetSuccessRate()

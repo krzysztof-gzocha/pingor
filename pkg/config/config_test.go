@@ -11,11 +11,11 @@ import (
 )
 
 func TestLoad(t *testing.T) {
-	cfg, err := Load("../config.yaml")
+	cfg, err := Load("../../config.yaml")
 	assert.Nil(t, err)
 	assert.NotZero(t, cfg.SuccessRateThreshold)
 
-	cfg, err = Load("../main.go")
+	cfg, err = Load("../../main.go")
 	assert.Error(t, err)
 	assert.Zero(t, cfg.SuccessRateThreshold)
 }

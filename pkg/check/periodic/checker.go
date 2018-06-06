@@ -1,57 +1,55 @@
-package check
+package periodic
 
 import (
 	"context"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/krzysztof-gzocha/pingor/event"
+	"github.com/krzysztof-gzocha/pingor/pkg/check"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
+	"github.com/krzysztof-gzocha/pingor/pkg/event"
 )
 
 // ConnectionCheckEventName will be used as event name when dispatching information about new connection check result
 const ConnectionCheckEventName = "connection.check"
 
-// PeriodicCheckerWrapper will use provided internal checker periodically and will trigger an event to dispatcher about each result.
+// Checker will use provided internal checker periodically and will trigger an event to dispatcher about each result.
 // Period will be getting longer (up to maximalCheckingPeriod) if connection is stable. If any error will be detected, the period
 // will go back to minimalCheckingPeriod. It will check success rate and result's time against provided threshold to check if connection is ok or not.
-type PeriodicCheckerWrapper struct {
+type Checker struct {
 	eventDispatcher       event.DispatcherInterface
-	checker               CheckerInterface
+	checker               check.CheckerInterface
 	successRateThreshold  float32
 	successTimeThreshold  time.Duration
 	minimalCheckingPeriod time.Duration
 	maximalCheckingPeriod time.Duration
 }
 
-// NewPeriodicCheckerWrapper will return new PeriodicCheckerWrapper
-func NewPeriodicCheckerWrapper(
+// NewChecker will return new Checker
+func NewChecker(
 	eventDispatcher event.DispatcherInterface,
-	checker CheckerInterface,
-	successRateThreshold float32,
-	successTimeThreshold,
+	checker check.CheckerInterface,
 	minimalCheckingPeriod,
 	maximalCheckingPeriod time.Duration,
-) PeriodicCheckerWrapper {
-	return PeriodicCheckerWrapper{
+) Checker {
+	return Checker{
 		eventDispatcher:       eventDispatcher,
 		checker:               checker,
-		successRateThreshold:  successRateThreshold,
-		successTimeThreshold:  successTimeThreshold,
 		minimalCheckingPeriod: minimalCheckingPeriod,
 		maximalCheckingPeriod: maximalCheckingPeriod,
 	}
 }
 
 // Check should be used to actually start checking process. In order to kill it, you have to kill it's context.
-func (c PeriodicCheckerWrapper) Check(ctx context.Context) ResultInterface {
+func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	c.periodicCheck(ctx)
 
-	return Result{}
+	return result.Result{}
 }
 
 // periodicCheck will run periodic checks on provided checker.
 // It's implemented only to get rid of dead code in Check method
-func (c PeriodicCheckerWrapper) periodicCheck(ctx context.Context) {
+func (c Checker) periodicCheck(ctx context.Context) {
 	currentPeriod := c.minimalCheckingPeriod
 	for {
 		logrus.Debugf("Waiting for %s before next check", currentPeriod)
@@ -68,12 +66,8 @@ func (c PeriodicCheckerWrapper) periodicCheck(ctx context.Context) {
 	}
 }
 
-func (c PeriodicCheckerWrapper) newPeriod(currentPeriod time.Duration, result ResultInterface) time.Duration {
-	if result.GetSuccessRate() < c.successRateThreshold {
-		return c.minimalCheckingPeriod
-	}
-
-	if result.GetTime() > c.successTimeThreshold {
+func (c Checker) newPeriod(currentPeriod time.Duration, result result.ResultInterface) time.Duration {
+	if !result.IsSuccess() {
 		return c.minimalCheckingPeriod
 	}
 

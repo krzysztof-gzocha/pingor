@@ -1,6 +1,6 @@
 // +build unit
 
-package check
+package result
 
 import (
 	"encoding/json"
@@ -18,7 +18,7 @@ func TestResult_MarshalJSON(t *testing.T) {
 		SuccessRate: 0.75,
 		Time:        time.Second + time.Millisecond,
 	}
-	jsonEncoded, err := JsonResultPrinter(originalResult)
+	jsonEncoded, err := json.Marshal(originalResult)
 	assert.Nil(t, err)
 	decodedResult := struct {
 		Success     bool              `json:"success,omitempty"`

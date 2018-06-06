@@ -5,12 +5,15 @@ import (
 	"flag"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/krzysztof-gzocha/pingor/check"
-	"github.com/krzysztof-gzocha/pingor/config"
-	"github.com/krzysztof-gzocha/pingor/dns"
-	"github.com/krzysztof-gzocha/pingor/event"
-	"github.com/krzysztof-gzocha/pingor/ping"
-	"github.com/krzysztof-gzocha/pingor/subscriber"
+	"github.com/krzysztof-gzocha/pingor/pkg/check"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/dns"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/multiple"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/periodic"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/ping"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/printer/json"
+	"github.com/krzysztof-gzocha/pingor/pkg/config"
+	"github.com/krzysztof-gzocha/pingor/pkg/event"
+	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 )
 
 func main() {
@@ -28,19 +31,19 @@ func main() {
 
 	// EventDispatcher with subscribers
 	eventDispatcher := event.NewDispatcher()
-	eventDispatcher.AttachSubscriber(check.ConnectionCheckEventName, subscriber.LogConnectionCheckResult)
-	reconnectSubscriber := subscriber.NewReconnectionSubscriber(check.JsonResultPrinter)
-	eventDispatcher.AttachSubscriber(check.ConnectionCheckEventName, reconnectSubscriber.NotifyAboutReconnection)
+	eventDispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, subscriber.LogConnectionCheckResult)
+	reconnectSubscriber := subscriber.NewReconnectionSubscriber(json.Printer)
+	eventDispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, reconnectSubscriber.NotifyAboutReconnection)
 
 	// Main checker
-	checker := check.NewPeriodicCheckerWrapper(
+	checker := periodic.NewChecker(
 		eventDispatcher,
-		check.NewMultipleChecker(
+		multiple.NewChecker(
 			cfg.SingleCheckTimeout,
+			cfg.SuccessRateThreshold,
+			cfg.SuccessTimeThreshold,
 			getCheckers(cfg)...,
 		),
-		cfg.SuccessRateThreshold,
-		cfg.SuccessTimeThreshold,
 		cfg.MinimalCheckingPeriod,
 		cfg.MaximalCheckingPeriod,
 	)
@@ -53,11 +56,11 @@ func getCheckers(cfg config.Config) []check.CheckerInterface {
 	checkers := make([]check.CheckerInterface, 0)
 
 	if len(cfg.Ping.IPs) > 0 {
-		checkers = append(checkers, check.NewPingChecker(ping.PingCommand{}, cfg.Ping.IPs...))
+		checkers = append(checkers, ping.NewChecker(ping.Command{}, cfg.Ping.IPs...))
 	}
 
 	if len(cfg.Dns.Hosts) > 0 {
-		checkers = append(checkers, check.NewDNSChecker(dns.Dns{}, cfg.Dns.Hosts...))
+		checkers = append(checkers, dns.NewChecker(dns.Dns{}, cfg.Dns.Hosts...))
 	}
 
 	return checkers

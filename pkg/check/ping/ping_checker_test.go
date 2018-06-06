@@ -1,6 +1,6 @@
 // +build unit
 
-package check
+package ping
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 
 	"errors"
 
-	"github.com/krzysztof-gzocha/pingor/ping"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -19,7 +18,7 @@ import (
 func TestNewPingChecker(t *testing.T) {
 	pingMock := pingMock{}
 	ip := net.IPv4(1, 2, 3, 4)
-	checker := NewPingChecker(pingMock, ip)
+	checker := NewChecker(pingMock, ip)
 	assert.Equal(t, checker.ping, pingMock)
 	assert.Equal(t, checker.ips[0], ip)
 	assert.Len(t, checker.ips, 1)
@@ -27,13 +26,13 @@ func TestNewPingChecker(t *testing.T) {
 
 func TestPingChecker_Check_Success(t *testing.T) {
 	successPing := pingMock{}
-	pingResult := ping.Result{Time: time.Second, PacketsReceived: 10, PacketsSent: 11}
+	pingResult := Result{Time: time.Second, PacketsReceived: 10, PacketsSent: 11}
 	successPing.
 		On("Ping", mock.Anything, mock.Anything).
 		Once().
 		Return(pingResult, nil)
 
-	checker := NewPingChecker(successPing, net.IPv4(1, 1, 1, 1))
+	checker := NewChecker(successPing, net.IPv4(1, 1, 1, 1))
 	result := checker.Check(context.TODO())
 
 	assert.True(t, result.IsSuccess())
@@ -45,13 +44,13 @@ func TestPingChecker_Check_Success(t *testing.T) {
 
 func TestPingChecker_Check_Error(t *testing.T) {
 	unsuccessfulPing := pingMock{}
-	pingResult := ping.Result{Time: time.Second, PacketsReceived: 0, PacketsSent: 11}
+	pingResult := Result{Time: time.Second, PacketsReceived: 0, PacketsSent: 11}
 	unsuccessfulPing.
 		On("Ping", mock.Anything, mock.Anything).
 		Once().
 		Return(pingResult, errors.New("error"))
 
-	checker := NewPingChecker(unsuccessfulPing, net.IPv4(1, 1, 1, 1))
+	checker := NewChecker(unsuccessfulPing, net.IPv4(1, 1, 1, 1))
 	result := checker.Check(context.TODO())
 
 	assert.False(t, result.IsSuccess())
@@ -63,13 +62,13 @@ func TestPingChecker_Check_Error(t *testing.T) {
 
 func TestPingChecker_Check_EmptyIps(t *testing.T) {
 	unsuccessfulPing := pingMock{}
-	pingResult := ping.Result{Time: time.Second, PacketsReceived: 0, PacketsSent: 11}
+	pingResult := Result{Time: time.Second, PacketsReceived: 0, PacketsSent: 11}
 	unsuccessfulPing.
 		On("Ping", mock.Anything, mock.Anything).
 		Times(0).
 		Return(pingResult, errors.New("error"))
 
-	checker := NewPingChecker(unsuccessfulPing)
+	checker := NewChecker(unsuccessfulPing)
 	result := checker.Check(context.TODO())
 
 	assert.False(t, result.IsSuccess())
@@ -83,8 +82,8 @@ type pingMock struct {
 	mock.Mock
 }
 
-func (m pingMock) Ping(ctx context.Context, ip net.IP) (ping.Result, error) {
+func (m pingMock) Ping(ctx context.Context, ip net.IP) (Result, error) {
 	args := m.Called(ctx, ip)
 
-	return args.Get(0).(ping.Result), args.Error(1)
+	return args.Get(0).(Result), args.Error(1)
 }
