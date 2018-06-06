@@ -18,6 +18,11 @@ func TestJsonResultPrinter_Error(t *testing.T) {
 	assert.Contains(t, err.Error(), "unsupported value: NaN")
 	assert.Equal(t, "", res)
 }
+func TestJsonResultPrinter_Success(t *testing.T) {
+	res, err := Printer(invalidResult{Test: 1})
+	assert.Nil(t, err)
+	assert.NotEmpty(t, res)
+}
 
 type invalidResult struct {
 	Test float64
