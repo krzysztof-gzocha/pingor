@@ -1,4 +1,4 @@
-package check
+package result
 
 import (
 	"encoding/json"

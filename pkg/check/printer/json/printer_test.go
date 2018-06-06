@@ -1,6 +1,6 @@
 // +build unit
 
-package check
+package json
 
 import (
 	"testing"
@@ -8,14 +8,20 @@ import (
 
 	"math"
 
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJsonResultPrinter_Error(t *testing.T) {
-	res, err := JsonResultPrinter(invalidResult{Test: math.NaN()})
+	res, err := Printer(invalidResult{Test: math.NaN()})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported value: NaN")
 	assert.Equal(t, "", res)
+}
+func TestJsonResultPrinter_Success(t *testing.T) {
+	res, err := Printer(invalidResult{Test: 1})
+	assert.Nil(t, err)
+	assert.NotEmpty(t, res)
 }
 
 type invalidResult struct {
@@ -34,6 +40,6 @@ func (r invalidResult) GetTime() time.Duration {
 func (r invalidResult) GetMessage() string {
 	return ""
 }
-func (r invalidResult) GetSubResults() []ResultInterface {
-	return make([]ResultInterface, 0)
+func (r invalidResult) GetSubResults() []result.ResultInterface {
+	return make([]result.ResultInterface, 0)
 }

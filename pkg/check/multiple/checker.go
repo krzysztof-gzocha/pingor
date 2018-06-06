@@ -1,4 +1,4 @@
-package check
+package multiple
 
 import (
 	"context"
@@ -7,39 +7,42 @@ import (
 	"sync"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/krzysztof-gzocha/pingor/pkg/check"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 )
 
-// MultipleChecker is able to aggregate multiple checkers and treat them as single checker.
+// Checker is able to aggregate multiple checkers and treat them as single checker.
 // Result will be combination of all the results from individual checkers
-type MultipleChecker struct {
-	checkers           []CheckerInterface
-	singleCheckTimeout time.Duration
+type Checker struct {
+	checkers             []check.CheckerInterface
+	successRateThreshold float32
+	successTimeThreshold time.Duration
+	singleCheckTimeout   time.Duration
 }
 
-// NewMultipleChecker will return instance of MultipleChecker
-func NewMultipleChecker(
+// NewChecker will return instance of Checker
+func NewChecker(
 	singleCheckTimeout time.Duration,
-	checkers ...CheckerInterface,
-) MultipleChecker {
-	return MultipleChecker{
-		singleCheckTimeout: singleCheckTimeout,
-		checkers:           checkers,
+	successRateThreshold float32,
+	successTimeThreshold time.Duration,
+	checkers ...check.CheckerInterface,
+) Checker {
+	return Checker{
+		singleCheckTimeout:   singleCheckTimeout,
+		successRateThreshold: successRateThreshold,
+		successTimeThreshold: successTimeThreshold,
+		checkers:             checkers,
 	}
-}
-
-// CheckerInterface should be implemented by anything that is able to check current internet connection and return a result
-type CheckerInterface interface {
-	Check(ctx context.Context) ResultInterface
 }
 
 // Check will run all the checkers, combine their's results into single result and return it.
 // Each checker will run in separate go-routine
-func (c MultipleChecker) Check(ctx context.Context) ResultInterface {
-	overallResult := Result{Success: true}
+func (c Checker) Check(ctx context.Context) result.ResultInterface {
+	overallResult := result.Result{Success: true}
 	var wg sync.WaitGroup
 	for _, checker := range c.checkers {
 		wg.Add(1)
-		go func(ctx context.Context, checker CheckerInterface, wg *sync.WaitGroup, overallResult *Result) {
+		go func(ctx context.Context, checker check.CheckerInterface, wg *sync.WaitGroup, overallResult *result.Result) {
 			logrus.Debugf("Starting checker: %T", checker)
 			wrappedCtx, cancelFunc := context.WithTimeout(ctx, c.singleCheckTimeout)
 			singleResult := checker.Check(wrappedCtx)
@@ -64,6 +67,10 @@ func (c MultipleChecker) Check(ctx context.Context) ResultInterface {
 		}
 		overallResult.SuccessRate = float32(successRate / float32(len(overallResult.SubResults)))
 		overallResult.Time = totalTime / time.Duration(len(overallResult.SubResults))
+	}
+
+	if overallResult.GetSuccessRate() < c.successRateThreshold || overallResult.GetTime() > c.successTimeThreshold {
+		overallResult.Success = false
 	}
 
 	return overallResult

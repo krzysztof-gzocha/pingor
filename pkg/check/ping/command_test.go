@@ -11,8 +11,8 @@ import (
 )
 
 func TestPingCommand_Ping(t *testing.T) {
-	pc := PingCommand{}
-	assert.Implements(t, (*PingInterface)(nil), pc)
+	pc := Command{}
+	assert.Implements(t, (*PingerInterface)(nil), pc)
 	result, err := pc.Ping(context.TODO(), net.ParseIP("8.8.8.8"))
 	assert.NoError(t, err)
 	assert.NotZero(t, result.Time)
@@ -24,7 +24,7 @@ func TestPingCommand_Ping(t *testing.T) {
 }
 
 func TestPingCommand_Ping_Error(t *testing.T) {
-	pc := PingCommand{}
+	pc := Command{}
 	result, err := pc.Ping(context.TODO(), net.ParseIP("something"))
 	assert.Error(t, err)
 	assert.Zero(t, result.Time)

@@ -9,10 +9,10 @@ import (
 )
 
 func TestDns_ResolveHost(t *testing.T) {
-	dns := Dns{}
-	assert.Implements(t, (*DnsInterface)(nil), dns)
+	d := Dns{}
+	assert.Implements(t, (*ResolverInterface)(nil), d)
 
-	result, err := dns.ResolveHost("google.com")
+	result, err := d.ResolveHost("google.com")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, result.Ip)
 	assert.NotZero(t, result.Time)

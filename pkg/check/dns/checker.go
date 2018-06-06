@@ -1,4 +1,4 @@
-package check
+package dns
 
 import (
 	"context"
@@ -6,41 +6,41 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/krzysztof-gzocha/pingor/dns"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 )
 
-// DNSChecker will try to resolve provided hosts into IPs in order to check the connection to DNS
-type DNSChecker struct {
-	dns   dns.DnsInterface
+// Checker will try to resolve provided hosts into IPs in order to check the connection to DNS
+type Checker struct {
+	dns   ResolverInterface
 	hosts []string
 }
 
-// NewDNSChecker will return new instance of DNSChecker
-func NewDNSChecker(dns dns.DnsInterface, hosts ...string) DNSChecker {
-	return DNSChecker{dns: dns, hosts: hosts}
+// NewChecker will return new instance of Checker
+func NewChecker(dns ResolverInterface, hosts ...string) Checker {
+	return Checker{dns: dns, hosts: hosts}
 }
 
 // Check will try to resolve provided hosts into IPs in order to check the connection to DNS.
 // Time result is average time required to resolve all the hosts.
-func (c DNSChecker) Check(ctx context.Context) ResultInterface {
+func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	if len(c.hosts) == 0 {
-		return Result{}
+		return result.Result{}
 	}
 
-	overallResult := Result{Success: true, Message: fmt.Sprintf("Checking DNS with %d hosts", len(c.hosts))}
+	overallResult := result.Result{Success: true, Message: fmt.Sprintf("Checking DNS with %d hosts", len(c.hosts))}
 	for _, host := range c.hosts {
 		overallResult.SubResults = append(overallResult.SubResults, c.singleCheck(ctx, host))
 	}
 
 	overallResult = c.calculateOverallChecker(overallResult)
-	logrus.Debugf("DNSChecker: success rate: %.2f", overallResult.SuccessRate*100)
+	logrus.Debugf("Checker: success rate: %.2f", overallResult.SuccessRate*100)
 
 	return overallResult
 }
 
-func (c DNSChecker) singleCheck(ctx context.Context, host string) Result {
-	result := Result{Success: true}
-	logrus.Debugf("DNSChecker: starting to check: %s", host)
+func (c Checker) singleCheck(ctx context.Context, host string) result.Result {
+	result := result.Result{Success: true}
+	logrus.Debugf("Checker: starting to check: %s", host)
 
 	dnsResult, err := c.dns.ResolveHost(host)
 	result.Time = dnsResult.Time
@@ -56,7 +56,7 @@ func (c DNSChecker) singleCheck(ctx context.Context, host string) Result {
 	return result
 }
 
-func (c DNSChecker) calculateOverallChecker(overallResult Result) Result {
+func (c Checker) calculateOverallChecker(overallResult result.Result) result.Result {
 	var successResults float32
 	var totalTime time.Duration
 	for _, subresult := range overallResult.SubResults {

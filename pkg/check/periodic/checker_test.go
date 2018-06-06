@@ -1,6 +1,6 @@
 // +build unit
 
-package check
+package periodic
 
 import (
 	"testing"
@@ -9,20 +9,20 @@ import (
 
 	"context"
 
-	"github.com/krzysztof-gzocha/pingor/event"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
+	"github.com/krzysztof-gzocha/pingor/pkg/event"
+	pkgMock "github.com/krzysztof-gzocha/pingor/pkg/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
 func TestNewPeriodicCheckerWrapper(t *testing.T) {
-	subChecker := checkerMock{}
+	subChecker := pkgMock.CheckerMock{}
 	eventDispatcherMock := eventDispatcherMock{}
 
-	checker := NewPeriodicCheckerWrapper(
+	checker := NewChecker(
 		eventDispatcherMock,
 		subChecker,
-		0.5,
-		time.Second,
 		time.Second,
 		time.Second,
 	)
@@ -33,21 +33,19 @@ func TestNewPeriodicCheckerWrapper(t *testing.T) {
 
 func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 	ctx, cancelFunc := context.WithCancel(context.TODO())
-	subChecker := checkerMock{}
+	subChecker := pkgMock.CheckerMock{}
 	eventDispatcherMock := eventDispatcherMock{}
 	subChecker.
 		On("Check", ctx).
 		Times(3).
-		Return(Result{Success: true, SuccessRate: 1})
+		Return(result.Result{Success: true, SuccessRate: 1})
 	eventDispatcherMock.
-		On("Dispatch", "connection.check", mock.AnythingOfType("check.Result")).
+		On("Dispatch", "connection.check", mock.AnythingOfType("result.Result")).
 		Times(3)
 
-	checker := NewPeriodicCheckerWrapper(
+	checker := NewChecker(
 		eventDispatcherMock,
 		subChecker,
-		0.5,
-		time.Millisecond*100,
 		time.Millisecond*100,
 		time.Millisecond*1000,
 	)
@@ -65,30 +63,27 @@ func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 }
 
 func TestPeriodicCheckerWrapper_newPeriod(t *testing.T) {
-	subChecker := checkerMock{}
+	subChecker := pkgMock.CheckerMock{}
 	eventDispatcherMock := eventDispatcherMock{}
 
 	minimalPeriod := time.Millisecond * 500
 	maximalPeriod := time.Minute
-	successTimeThreshold := time.Millisecond * 10
-	checker := NewPeriodicCheckerWrapper(
+	checker := NewChecker(
 		eventDispatcherMock,
 		subChecker,
-		0.5,
-		successTimeThreshold,
 		minimalPeriod,
 		maximalPeriod,
 	)
 
 	scenarios := []struct {
 		time     time.Duration
-		res      Result
+		res      result.Result
 		expected time.Duration
 	}{
-		{time: time.Second, res: Result{SuccessRate: 0}, expected: minimalPeriod},
-		{time: minimalPeriod * 2, res: Result{SuccessRate: 1, Time: successTimeThreshold * 5}, expected: minimalPeriod},
-		{time: maximalPeriod * 2, res: Result{SuccessRate: 1, Time: successTimeThreshold}, expected: maximalPeriod},
-		{time: maximalPeriod - time.Millisecond, res: Result{SuccessRate: 1, Time: successTimeThreshold}, expected: maximalPeriod},
+		{time: time.Second, res: result.Result{Success: false}, expected: minimalPeriod},
+		{time: minimalPeriod * 2, res: result.Result{Success: false}, expected: minimalPeriod},
+		{time: maximalPeriod * 2, res: result.Result{Success: true}, expected: maximalPeriod},
+		{time: maximalPeriod - time.Millisecond, res: result.Result{Success: true}, expected: maximalPeriod},
 	}
 
 	for _, scenario := range scenarios {
