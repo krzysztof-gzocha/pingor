@@ -27,25 +27,31 @@ func TestNewMultipleChecker(t *testing.T) {
 
 func TestMultipleChecker_Check(t *testing.T) {
 	ctx := context.TODO()
-	unsuccessfulResult := result.Result{Success: false, SuccessRate: 0.3, Time: time.Second}
-	successfulResult := result.Result{Success: true, SuccessRate: 0.8, Time: time.Millisecond * 500}
+	unsuccessfulResult := result.Result{Success: false, SuccessRate: 0.4, Time: time.Millisecond * 40}
+	successfulResult := result.Result{Success: true, SuccessRate: 0.6, Time: time.Millisecond * 60}
 	successChecker := new(pkgMock.CheckerMock)
 	unsuccessfulChecker := pkgMock.CheckerMock{Result: unsuccessfulResult}
 	successChecker.
-		On("Check", mock.AnythingOfType("*context.timerCtx")).
+		On("Check", mock.Anything).
 		Once().
 		Return(successfulResult)
 	unsuccessfulChecker.
-		On("Check", mock.AnythingOfType("*context.timerCtx")).
+		On("Check", mock.Anything).
 		Once().
 		Return(unsuccessfulResult)
 
-	checker := NewChecker(time.Second, 1, time.Second*5, successChecker, unsuccessfulChecker)
+	checker := NewChecker(
+		time.Second,
+		1,
+		time.Second*5,
+		successChecker,
+		unsuccessfulChecker,
+	)
 	res := checker.Check(ctx)
 	assert.NotNil(t, res)
 	assert.False(t, res.IsSuccess())
-	assert.Equal(t, float32(0.55), res.GetSuccessRate())
-	assert.Equal(t, time.Millisecond*750, res.GetTime())
+	assert.Equal(t, float32(0.5), res.GetSuccessRate())
+	assert.Equal(t, time.Millisecond*50, res.GetTime())
 	assert.True(t, successChecker.AssertExpectations(t))
 }
 
