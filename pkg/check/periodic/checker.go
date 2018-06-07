@@ -52,17 +52,17 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 func (c Checker) periodicCheck(ctx context.Context) {
 	currentPeriod := c.minimalCheckingPeriod
 	for {
-		logrus.Debugf("Waiting for %s before next check", currentPeriod)
+		logrus.WithField("period", currentPeriod.String()).Debugf("%T: Waiting for %s before next check", c, currentPeriod.String())
 		select {
 		case <-ctx.Done():
-			logrus.Debug("PeriodicChecker: exit")
+			logrus.Debug("%T: exit", c)
 			return
 		case <-time.After(currentPeriod):
 		}
 
-		result := c.checker.Check(ctx)
-		c.eventDispatcher.Dispatch(ConnectionCheckEventName, result)
-		currentPeriod = c.newPeriod(currentPeriod, result)
+		res := c.checker.Check(ctx)
+		c.eventDispatcher.Dispatch(ConnectionCheckEventName, res)
+		currentPeriod = c.newPeriod(currentPeriod, res)
 	}
 }
 

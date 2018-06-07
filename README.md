@@ -10,7 +10,7 @@ It's not supporting any database or reporting mechanism yet, but it's architectu
 # How?
 PinGOr will read provided config and try to:
 - resolve provided host names to IPs,
-- run ping command on the host to specified IPs.  
+- run ping command on the host to specified IPs.
 
 It will start checking the connection after configured minimal checking period and if the connection will be ok the period will be doubled.
 When connection checks will drop below configured success rate threshold, then the connection will be marked as "dropped" and proper log will be created.
@@ -41,6 +41,12 @@ success_time_threshold: 5s    # Max average time of sub-checks to mark whole che
 single_check_timeout: 10s     # Timeout for single sub-check
 minimal_checking_period: 1m   # Minimal, starting period for periodic checks. Will double after success
 maximal_checking_period: 30m  # Maximal period for periodic checks
+www:
+  urls:     # URLs to check if HTTP status is 200 OK
+    - https://wp.pl
+    - https://www.onet.pl
+    - https://www.google.com
+    - https://www.upc.pl
 dns:
   hosts:  # Hosts to resolve in order to confirm connection to DNS is working. Leave empty to skip DNS checks
     - wp.pl

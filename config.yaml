@@ -1,8 +1,14 @@
 success_rate_threshold: 0.74
 success_time_threshold: 1s
 single_check_timeout: 10s
-minimal_checking_period: 1m
-maximal_checking_period: 1h
+minimal_checking_period: 30s
+maximal_checking_period: 60s
+www:
+  urls:
+    - https://wp.pl
+    - https://www.onet.pl
+    - https://www.google.com
+    - https://www.upc.pl
 dns:
   hosts:
     - wp.pl

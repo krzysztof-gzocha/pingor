@@ -42,20 +42,8 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	var wg sync.WaitGroup
 	for _, checker := range c.checkers {
 		wg.Add(1)
-		go func(ctx context.Context, checker check.CheckerInterface, wg *sync.WaitGroup, overallResult *result.Result) {
-			logrus.Debugf("Starting checker: %T", checker)
-			wrappedCtx, cancelFunc := context.WithTimeout(ctx, c.singleCheckTimeout)
-			singleResult := checker.Check(wrappedCtx)
-			cancelFunc()
-			if !singleResult.IsSuccess() {
-				overallResult.Success = false
-			}
-			overallResult.SubResults = append(overallResult.SubResults, singleResult)
-			logrus.Debugf("Checker %T is done", checker)
-			wg.Done()
-		}(ctx, checker, &wg, &overallResult)
+		go c.singleCheck(ctx, checker, &wg, &overallResult)
 	}
-
 	wg.Wait()
 
 	var totalTime time.Duration
@@ -74,4 +62,22 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	}
 
 	return overallResult
+}
+
+func (c Checker) singleCheck(
+	ctx context.Context,
+	checker check.CheckerInterface,
+	wg *sync.WaitGroup,
+	overallResult *result.Result,
+) {
+	logrus.Debugf("%T: Starting checker: %T", c, checker)
+	wrappedCtx, cancelFunc := context.WithTimeout(ctx, c.singleCheckTimeout)
+	singleResult := checker.Check(wrappedCtx)
+	cancelFunc()
+	if !singleResult.IsSuccess() {
+		overallResult.Success = false
+	}
+	overallResult.SubResults = append(overallResult.SubResults, singleResult)
+	logrus.Debugf("%T: Checker %T is done", c, checker)
+	wg.Done()
 }

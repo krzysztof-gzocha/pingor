@@ -12,5 +12,8 @@ func LogConnectionCheckResult(arg interface{}) {
 		return
 	}
 
-	logrus.Infof("Connection check with success rate %.2f%% and time %s", res.GetSuccessRate()*100, res.GetTime())
+	logrus.
+		WithField("time", res.GetTime().String()).
+		WithField("successRate", res.GetSuccessRate()*100).
+		Infof("Connection check with success rate %.2f%% and average time %s", res.GetSuccessRate()*100, res.GetTime())
 }
