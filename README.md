@@ -41,7 +41,7 @@ success_time_threshold: 5s    # Max average time of sub-checks to mark whole che
 single_check_timeout: 10s     # Timeout for single sub-check
 minimal_checking_period: 1m   # Minimal, starting period for periodic checks. Will double after success
 maximal_checking_period: 30m  # Maximal period for periodic checks
-www:
+http:
   urls:     # URLs to check if HTTP status is 200 OK
     - https://wp.pl
     - https://www.onet.pl
