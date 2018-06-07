@@ -31,7 +31,7 @@ type PingConfig struct {
 type rawConfig struct {
 	Dns                         DnsConfig
 	RawPing                     rawPingConfig `yaml:"ping"`
-	Http                        HttpConfig    `yaml:"www"`
+	Http                        HttpConfig    `yaml:"http"`
 	SuccessRateThreshold        float32       `yaml:"success_rate_threshold"`
 	SuccessTimeThresholdString  string        `yaml:"success_time_threshold"`
 	SingleCheckTimeoutString    string        `yaml:"single_check_timeout"`
