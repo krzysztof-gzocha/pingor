@@ -4,9 +4,12 @@ import (
 	"context"
 	"flag"
 
+	"net/http"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/dns"
+	httpCheck "github.com/krzysztof-gzocha/pingor/pkg/check/http"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/multiple"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/periodic"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/ping"
@@ -61,6 +64,10 @@ func getCheckers(cfg config.Config) []check.CheckerInterface {
 
 	if len(cfg.Dns.Hosts) > 0 {
 		checkers = append(checkers, dns.NewChecker(dns.Dns{}, cfg.Dns.Hosts...))
+	}
+
+	if len(cfg.Http.Urls) > 0 {
+		checkers = append(checkers, httpCheck.NewChecker(http.DefaultClient, cfg.Http.Urls...))
 	}
 
 	return checkers

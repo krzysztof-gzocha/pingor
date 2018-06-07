@@ -32,38 +32,41 @@ func (p Checker) Check(ctx context.Context) result.ResultInterface {
 
 	overallResult := result.Result{Success: true, Message: fmt.Sprintf("Checking ping command with %d IPs", len(p.ips))}
 	for _, ip := range p.ips {
-		result := p.singleCheck(ctx, ip)
-		overallResult.SubResults = append(overallResult.SubResults, result)
+		res := p.singleCheck(ctx, ip)
+		overallResult.SubResults = append(overallResult.SubResults, res)
 	}
 
-	return p.calculateOverallResult(overallResult)
+	p.calculateOverallResult(&overallResult)
+	logrus.WithField("successRate", overallResult.SuccessRate*100).Debugf("%T: done", p)
+
+	return overallResult
 }
 
 func (p Checker) singleCheck(ctx context.Context, ip net.IP) result.Result {
-	result := result.Result{Success: true}
-	logrus.Debugf("Checker: starting to check %s", ip.String())
+	res := result.Result{Success: true}
+	logrus.WithField("ip", ip.String()).Debugf("%T: starting to check", p)
 	pingResult, err := p.ping.Ping(ctx, ip)
-	result.Message = fmt.Sprintf("%T:%s", p, ip.String())
+	res.Message = fmt.Sprintf("%T:%s", p, ip.String())
 	if err != nil {
 		errMsg := fmt.Sprintf("%T:%s: %s", p, ip.String(), err.Error())
-		result.Message = errMsg
-		result.Success = false
+		res.Message = errMsg
+		res.Success = false
 	}
 
 	if !pingResult.AtLeastOneSuccess() {
-		result.Success = false
+		res.Success = false
 	}
 
 	if pingResult.PacketsReceived > 0 {
-		result.SuccessRate = float32(pingResult.PacketsReceived) / float32(pingResult.PacketsSent)
+		res.SuccessRate = float32(pingResult.PacketsReceived) / float32(pingResult.PacketsSent)
 	}
 
-	result.Time = pingResult.Time
+	res.Time = pingResult.Time
 
-	return result
+	return res
 }
 
-func (p Checker) calculateOverallResult(overallResult result.Result) result.Result {
+func (p Checker) calculateOverallResult(overallResult *result.Result) {
 	var successRates float32
 	for _, subResult := range overallResult.SubResults {
 		successRates += subResult.GetSuccessRate()
@@ -74,6 +77,4 @@ func (p Checker) calculateOverallResult(overallResult result.Result) result.Resu
 	}
 	overallResult.SuccessRate = successRates / float32(len(overallResult.SubResults))
 	overallResult.Time = overallResult.Time / time.Duration(len(overallResult.SubResults))
-
-	return overallResult
 }

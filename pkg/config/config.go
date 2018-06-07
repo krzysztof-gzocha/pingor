@@ -31,6 +31,7 @@ type PingConfig struct {
 type rawConfig struct {
 	Dns                         DnsConfig
 	RawPing                     rawPingConfig `yaml:"ping"`
+	Http                        HttpConfig    `yaml:"www"`
 	SuccessRateThreshold        float32       `yaml:"success_rate_threshold"`
 	SuccessTimeThresholdString  string        `yaml:"success_time_threshold"`
 	SingleCheckTimeoutString    string        `yaml:"single_check_timeout"`
@@ -40,6 +41,10 @@ type rawConfig struct {
 
 type rawPingConfig struct {
 	IpStrings []string `yaml:"ips"`
+}
+
+type HttpConfig struct {
+	Urls []string `yaml:"urls"`
 }
 
 // Load will use 3rd party vendor to parse the file and return parsed config

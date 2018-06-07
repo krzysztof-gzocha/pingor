@@ -33,27 +33,27 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	}
 
 	overallResult = c.calculateOverallChecker(overallResult)
-	logrus.Debugf("Checker: success rate: %.2f", overallResult.SuccessRate*100)
+	logrus.WithField("successRate", overallResult.SuccessRate*100).Debugf("%T: done", c)
 
 	return overallResult
 }
 
-func (c Checker) singleCheck(ctx context.Context, host string) result.Result {
-	result := result.Result{Success: true}
-	logrus.Debugf("Checker: starting to check: %s", host)
+func (c Checker) singleCheck(ctx context.Context, host string) result.ResultInterface {
+	res := result.Result{Success: true}
+	logrus.WithField("host", host).Debugf("%T: starting to check", c)
 
 	dnsResult, err := c.dns.ResolveHost(host)
-	result.Time = dnsResult.Time
-	result.Message = fmt.Sprintf("%T:%s", c, host)
-	result.SuccessRate = 1
+	res.Time = dnsResult.Time
+	res.Message = fmt.Sprintf("%T:%s", c, host)
+	res.SuccessRate = 1
 	if err != nil {
 		errMsg := fmt.Sprintf("%T:%s: Failed to resolve host: %s", c, host, err.Error())
-		result.Success = false
-		result.Message = errMsg
-		result.SuccessRate = 0
+		res.Success = false
+		res.Message = errMsg
+		res.SuccessRate = 0
 	}
 
-	return result
+	return res
 }
 
 func (c Checker) calculateOverallChecker(overallResult result.Result) result.Result {
