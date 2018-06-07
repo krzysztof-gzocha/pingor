@@ -3,7 +3,7 @@ success_time_threshold: 1s
 single_check_timeout: 10s
 minimal_checking_period: 30s
 maximal_checking_period: 60s
-www:
+http:
   urls:
     - https://wp.pl
     - https://www.onet.pl
