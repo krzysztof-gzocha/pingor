@@ -3,20 +3,18 @@
 [![codecov](https://codecov.io/gh/krzysztof-gzocha/pingor/branch/master/graph/badge.svg)](https://codecov.io/gh/krzysztof-gzocha/pingor)
 
 # pinGOr
-Logs for connection monitoring with Golang.
+Create logs about disconnections with Golang.
 Run pinGOr and see it's logs to know if your internet connection was interrupted or not.
-It's not supporting any database or reporting mechanism yet, but it's architecture is easy to add new features.
+Currently pinGOr is logging all information to console and persist reconnection events to DynamoDB (if configured)
 
 # How?
 PinGOr will read provided config and try to:
 - resolve provided host names to IPs,
+- inspect HTTP statuses of provided URLs,
 - run ping command on the host to specified IPs.
 
 It will start checking the connection after configured minimal checking period and if the connection will be ok the period will be doubled.
 When connection checks will drop below configured success rate threshold, then the connection will be marked as "dropped" and proper log will be created.
-
-# Why?
-I have signed SLA agreement with my ISP, but didn't have any tool to actually know if there was any connection-related problem, while the PC was running and I was away.
 
 # Usage
 In order to build the executable run:
@@ -41,6 +39,12 @@ success_time_threshold: 5s    # Max average time of sub-checks to mark whole che
 single_check_timeout: 10s     # Timeout for single sub-check
 minimal_checking_period: 1m   # Minimal, starting period for periodic checks. Will double after success
 maximal_checking_period: 30m  # Maximal period for periodic checks
+persister:
+  dynamodb:
+    enabled: true             # Store reconnection events in DynamoDB?
+    region: eu-west-1         # Which AWS region should be used?
+    table_name: pingor        # Which table?
+    device_name: pc1          # How to call this device in DynamoDB?
 http:
   urls:     # URLs to check if HTTP status is 200 OK
     - https://wp.pl
@@ -76,11 +80,20 @@ User=somebody # EDIT THIS
 WorkingDirectory=/full/path/to/pingor/dir # EDIT THIS
 ExecStart=/full/path/to/pingor/exec # EDIT THIS
 Restart=on-abort
+Environment=AWS_ACCESS_KEY_ID=....YOUR KEY..... # EDIT THIS
+Environment=AWS_SECRET_ACCESS_KEY=....YOUR SECRET..... # EDIT THIS
 
 [Install]
 WantedBy=multi-user.target
 ```
-After configuring it you can inspect the logs to check for connection disruption
+After configuring it you can inspect the logs (or AWS DynamoDB) to check for connection disruption
+
+# Using AWS DynamoDB
+In order to persist reconnection events to AWS DynamoDB you have to specify your access and secret keys as environment variables.
+If you are running pinGOr with the help of systemd you can specify them in `pingor.service` file.
+
+# Why?
+I have signed SLA agreement with my ISP, but didn't have any tool to actually know if there was any connection-related problem, while the PC was running and I was away.
 
 # Known issues
 - Was not tested on Windows

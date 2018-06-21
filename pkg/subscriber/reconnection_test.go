@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReconnectionEvent_DisconnectionDuration(t *testing.T) {
+func TestReconnectionEvent_DisconnectionDuration_Success(t *testing.T) {
 	now := time.Now()
 	after := now.Add(time.Second)
 	e := ReconnectionEvent{
@@ -21,6 +21,12 @@ func TestReconnectionEvent_DisconnectionDuration(t *testing.T) {
 	}
 
 	assert.Equal(t, time.Second, e.DisconnectionDuration())
+}
+
+func TestReconnectionEvent_DisconnectionDuration_MissingResults(t *testing.T) {
+	e := ReconnectionEvent{}
+
+	assert.Equal(t, time.Duration(0), e.DisconnectionDuration())
 }
 
 func TestReconnection_NotifyAboutReconnection_BadArgument(t *testing.T) {

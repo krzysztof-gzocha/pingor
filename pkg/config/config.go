@@ -54,6 +54,7 @@ type Persister struct {
 
 type DynamoDbPersister struct {
 	Enabled    bool   `yaml:"enabled"`
+	Region     string `yaml:"region"`
 	TableName  string `yaml:"table_name"`
 	DeviceName string `yaml:"device_name"`
 }

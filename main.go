@@ -74,7 +74,7 @@ func attachSubscribers(dispatcher event.DispatcherInterface, cfg config.Config) 
 		return nil
 	}
 
-	sess, err := session.CreateSession()
+	sess, err := session.CreateSession(cfg.Persister.DynamoDB.Region)
 	if err != nil {
 		return errors.Wrap(err, "Could not create AWS session")
 	}

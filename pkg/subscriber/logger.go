@@ -15,5 +15,5 @@ func LogConnectionCheckResult(arg interface{}) {
 	logrus.
 		WithField("time", res.GetTime().String()).
 		WithField("successRate", res.GetSuccessRate()*100).
-		Infof("Successful connection check")
+		Infof("Connection check")
 }

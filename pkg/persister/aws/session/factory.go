@@ -7,6 +7,9 @@ import (
 )
 
 // CreateSession will return AWS Session with default ENV credential provider
-func CreateSession() (*session.Session, error) {
-	return session.NewSession(&aws.Config{Credentials: credentials.NewEnvCredentials()})
+func CreateSession(region string) (*session.Session, error) {
+	return session.NewSession(&aws.Config{
+		Credentials: credentials.NewEnvCredentials(),
+		Region:      aws.String(region),
+	})
 }
