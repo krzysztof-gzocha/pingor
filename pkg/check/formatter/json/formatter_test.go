@@ -13,13 +13,13 @@ import (
 )
 
 func TestJsonResultPrinter_Error(t *testing.T) {
-	res, err := Printer(invalidResult{Test: math.NaN()})
+	res, err := Formatter(invalidResult{Test: math.NaN()})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "unsupported value: NaN")
 	assert.Equal(t, "", res)
 }
 func TestJsonResultPrinter_Success(t *testing.T) {
-	res, err := Printer(invalidResult{Test: 1})
+	res, err := Formatter(invalidResult{Test: 1})
 	assert.Nil(t, err)
 	assert.NotEmpty(t, res)
 }

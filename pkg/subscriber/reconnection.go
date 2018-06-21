@@ -3,27 +3,50 @@ package subscriber
 import (
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/krzysztof-gzocha/pingor/pkg/check/printer"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
+	"github.com/krzysztof-gzocha/pingor/pkg/event"
 )
+
+const ReconnectionEventName = "reconnected"
+
+// ReconnectionEvent will be used when reconnection was detected
+type ReconnectionEvent struct {
+	LastSuccess         result.TimeResultInterface `json:"last_success"`
+	FirstConnectionDrop result.TimeResultInterface `json:"first_connection_drop"`
+	LastConnectionDrop  result.TimeResultInterface `json:"last_connection_drop"`
+	CurrentResult       result.TimeResultInterface `json:"current_result"`
+}
+
+// DisconnectionDuration will return disconnection duration
+func (r ReconnectionEvent) DisconnectionDuration() time.Duration {
+	if r.CurrentResult == nil || r.FirstConnectionDrop == nil {
+		return time.Duration(0)
+	}
+
+	return r.CurrentResult.GetMeasuredAt().Sub(r.FirstConnectionDrop.GetMeasuredAt())
+}
 
 // Reconnection subscriber is responsible to check if connection was re-established. If so it will create proper log about it.
 type Reconnection struct {
-	previousResult     result.ResultInterface
-	lastConnectionDrop time.Time
-	printer            printer.PrinterFunc
+	dispatcher        event.DispatcherInterface
+	previousResult    result.TimeResultInterface
+	lastSuccessResult result.TimeResultInterface
+	firstDropResult   result.TimeResultInterface
+	lastDropResult    result.TimeResultInterface
 }
 
-// NewReconnectionSubscriber will return a pointer to Reconnection
-func NewReconnectionSubscriber(printer printer.PrinterFunc) *Reconnection {
-	return &Reconnection{printer: printer}
+// NewReconnection will return a pointer to Reconnection
+func NewReconnection(
+	dispatcher event.DispatcherInterface,
+) *Reconnection {
+	return &Reconnection{
+		dispatcher: dispatcher,
+	}
 }
 
-// NotifyAboutReconnection is subscriber method that will read the result from provided argument and interpret them.
-// In case of when last result had errors and current is clear it will log this information alongside with time details.
+// NotifyAboutReconnection is subscriber method that will trigger an event when reconnection was detected
 func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
-	res, ok := arg.(result.ResultInterface)
+	res, ok := arg.(result.TimeResultInterface)
 	if !ok {
 		return
 	}
@@ -32,36 +55,50 @@ func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
 		r.prepareFirstPreviousResult(res)
 	}
 
+	// Reconnected
 	if !r.previousResult.IsSuccess() && res.IsSuccess() {
-		logrus.Warnf(
-			"Connection was re-established. There was no connection from %s (%s)",
-			r.lastConnectionDrop.Format(time.RFC3339),
-			time.Now().Sub(r.lastConnectionDrop).String(),
-		)
-		r.printResult(res)
+		r.lastDropResult = r.previousResult
+		r.lastSuccessResult = res
 		r.previousResult = res
+
+		r.dispatcher.Dispatch(ReconnectionEventName, ReconnectionEvent{
+			LastSuccess:         r.lastSuccessResult,
+			FirstConnectionDrop: r.firstDropResult,
+			LastConnectionDrop:  r.lastDropResult,
+			CurrentResult:       res,
+		})
+
+		return
 	}
 
+	// Dropped
 	if r.previousResult.IsSuccess() && !res.IsSuccess() {
-		logrus.Warnf("Connection was dropped!")
-		r.printResult(res)
+		r.lastSuccessResult = r.previousResult
 		r.previousResult = res
-		r.lastConnectionDrop = time.Now()
+		r.firstDropResult = res
+
+		return
 	}
+
+	// Still no connection
+	if !r.previousResult.IsSuccess() && !res.IsSuccess() {
+		r.lastDropResult = res
+		r.previousResult = res
+
+		return
+	}
+
+	// Still connected
+	r.lastSuccessResult = res
+	r.previousResult = res
 }
 
-func (r *Reconnection) printResult(result result.ResultInterface) {
-	output, err := r.printer(result)
-	if err != nil {
-		logrus.Errorf("Could not encode the result because of: %s", err.Error())
-	} else {
-		logrus.Warn(output)
-	}
-}
-
-func (r *Reconnection) prepareFirstPreviousResult(result result.ResultInterface) {
+func (r *Reconnection) prepareFirstPreviousResult(result result.TimeResultInterface) {
 	r.previousResult = result
 	if !r.previousResult.IsSuccess() {
-		r.lastConnectionDrop = time.Now()
+		r.firstDropResult = result
+		r.lastDropResult = result
 	}
+
+	r.lastSuccessResult = result
 }
