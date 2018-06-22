@@ -55,7 +55,7 @@ func (c Checker) periodicCheck(ctx context.Context) {
 		logrus.WithField("period", currentPeriod.String()).Debugf("%T: Waiting for %s before next check", c, currentPeriod.String())
 		select {
 		case <-ctx.Done():
-			logrus.Debug("%T: exit", c)
+			logrus.Debugf("%T: exit", c)
 			return
 		case <-time.After(currentPeriod):
 		}
