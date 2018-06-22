@@ -40,7 +40,7 @@ func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 		Times(3).
 		Return(result.Result{Success: true, SuccessRate: 1})
 	eventDispatcherMock.
-		On("Dispatch", "connection.check", mock.AnythingOfType("result.Result")).
+		On("Dispatch", "connection.check", mock.AnythingOfType("result.TimeResult")).
 		Times(3)
 
 	checker := NewChecker(

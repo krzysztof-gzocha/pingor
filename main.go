@@ -7,16 +7,21 @@ import (
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
+	vendorsDynamoDb "github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/krzysztof-gzocha/pingor/pkg/check"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/dns"
+	"github.com/krzysztof-gzocha/pingor/pkg/check/formatter/json"
 	httpCheck "github.com/krzysztof-gzocha/pingor/pkg/check/http"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/multiple"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/periodic"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/ping"
-	"github.com/krzysztof-gzocha/pingor/pkg/check/printer/json"
 	"github.com/krzysztof-gzocha/pingor/pkg/config"
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
+	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/dynamodb"
+	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/session"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
+	"github.com/krzysztof-gzocha/pingor/pkg/subscriber/reconnection"
+	"github.com/pkg/errors"
 )
 
 func main() {
@@ -34,9 +39,10 @@ func main() {
 
 	// EventDispatcher with subscribers
 	eventDispatcher := event.NewDispatcher()
-	eventDispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, subscriber.LogConnectionCheckResult)
-	reconnectSubscriber := subscriber.NewReconnectionSubscriber(json.Printer)
-	eventDispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, reconnectSubscriber.NotifyAboutReconnection)
+	err = attachSubscribers(eventDispatcher, cfg)
+	if err != nil {
+		logrus.Fatalf("Could not attach subscribers: %s", err.Error())
+	}
 
 	// Main checker
 	checker := periodic.NewChecker(
@@ -53,6 +59,32 @@ func main() {
 
 	// Main logic
 	checker.Check(context.Background())
+}
+
+func attachSubscribers(dispatcher event.DispatcherInterface, cfg config.Config) error {
+	dispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, subscriber.LogConnectionCheckResult)
+
+	reconnectSubscriber := subscriber.NewReconnection(dispatcher)
+	dispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, reconnectSubscriber.NotifyAboutReconnection)
+
+	reconnectLogger := reconnection.NewLogger(json.Formatter)
+	dispatcher.AttachSubscriber(subscriber.ReconnectionEventName, reconnectLogger.LogReconnection)
+
+	if !cfg.Persister.DynamoDB.Enabled {
+		return nil
+	}
+
+	sess, err := session.CreateSession(cfg.Persister.DynamoDB.Region)
+	if err != nil {
+		return errors.Wrap(err, "Could not create AWS session")
+	}
+
+	persisterSubscriber := reconnection.NewPersister(
+		dynamodb.NewPersister(vendorsDynamoDb.New(sess), cfg.Persister.DynamoDB),
+	)
+	dispatcher.AttachSubscriber(subscriber.ReconnectionEventName, persisterSubscriber.PersistReconnectionEvent)
+
+	return nil
 }
 
 func getCheckers(cfg config.Config) []check.CheckerInterface {

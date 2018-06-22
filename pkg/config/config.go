@@ -32,6 +32,7 @@ type rawConfig struct {
 	Dns                         DnsConfig
 	RawPing                     rawPingConfig `yaml:"ping"`
 	Http                        HttpConfig    `yaml:"http"`
+	Persister                   Persister     `yaml:"persister"`
 	SuccessRateThreshold        float32       `yaml:"success_rate_threshold"`
 	SuccessTimeThresholdString  string        `yaml:"success_time_threshold"`
 	SingleCheckTimeoutString    string        `yaml:"single_check_timeout"`
@@ -45,6 +46,17 @@ type rawPingConfig struct {
 
 type HttpConfig struct {
 	Urls []string `yaml:"urls"`
+}
+
+type Persister struct {
+	DynamoDB DynamoDbPersister `yaml:"dynamodb"`
+}
+
+type DynamoDbPersister struct {
+	Enabled    bool   `yaml:"enabled"`
+	Region     string `yaml:"region"`
+	TableName  string `yaml:"table_name"`
+	DeviceName string `yaml:"device_name"`
 }
 
 // Load will use 3rd party vendor to parse the file and return parsed config

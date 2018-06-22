@@ -60,7 +60,7 @@ func (c Checker) periodicCheck(ctx context.Context) {
 		case <-time.After(currentPeriod):
 		}
 
-		res := c.checker.Check(ctx)
+		res := result.TimeResult{Result: c.checker.Check(ctx), MeasuredAt: time.Now()}
 		c.eventDispatcher.Dispatch(ConnectionCheckEventName, res)
 		currentPeriod = c.newPeriod(currentPeriod, res)
 	}
