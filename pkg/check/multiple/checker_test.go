@@ -18,7 +18,7 @@ import (
 func TestNewMultipleChecker(t *testing.T) {
 	checkerMock := pkgMock.CheckerMock{}
 	checkerMock.On("Check").Return(result.Result{})
-	checker := NewChecker(time.Second, 1, time.Second, checkerMock, checkerMock)
+	checker := NewChecker(&pkgMock.Logger{}, time.Second, 1, time.Second, checkerMock, checkerMock)
 
 	assert.Implements(t, (*check.CheckerInterface)(nil), checker)
 	assert.Len(t, checker.checkers, 2)
@@ -26,6 +26,9 @@ func TestNewMultipleChecker(t *testing.T) {
 }
 
 func TestMultipleChecker_Check(t *testing.T) {
+	logger := &pkgMock.Logger{}
+	logger.On("Debugf", mock.Anything, mock.Anything)
+
 	ctx := context.TODO()
 	unsuccessfulResult := result.Result{Success: false, SuccessRate: 0.4, Time: time.Millisecond * 40}
 	successfulResult := result.Result{Success: true, SuccessRate: 0.6, Time: time.Millisecond * 60}
@@ -41,6 +44,7 @@ func TestMultipleChecker_Check(t *testing.T) {
 		Return(unsuccessfulResult)
 
 	checker := NewChecker(
+		logger,
 		time.Second,
 		1,
 		time.Second*5,
@@ -53,9 +57,12 @@ func TestMultipleChecker_Check(t *testing.T) {
 	assert.Equal(t, float32(0.5), res.GetSuccessRate())
 	assert.Equal(t, time.Millisecond*50, res.GetTime())
 	assert.True(t, successChecker.AssertExpectations(t))
+	logger.AssertExpectations(t)
 }
 
 func TestMultipleChecker_Check_ThresholdsConditions(t *testing.T) {
+	logger := &pkgMock.Logger{}
+	logger.On("Debugf", mock.Anything, mock.Anything)
 	ctx := context.TODO()
 	successfulResult := result.Result{
 		Success:     true,
@@ -69,6 +76,7 @@ func TestMultipleChecker_Check_ThresholdsConditions(t *testing.T) {
 		Return(successfulResult)
 
 	checker := NewChecker(
+		logger,
 		time.Second,
 		1,
 		time.Millisecond,
@@ -81,4 +89,5 @@ func TestMultipleChecker_Check_ThresholdsConditions(t *testing.T) {
 	assert.Equal(t, float32(0.85), res.GetSuccessRate())
 	assert.Equal(t, time.Second, res.GetTime())
 	assert.True(t, successChecker.AssertExpectations(t))
+	logger.AssertExpectations(t)
 }

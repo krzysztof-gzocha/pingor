@@ -6,20 +6,21 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 	pkgHttp "github.com/krzysztof-gzocha/pingor/pkg/http"
+	"github.com/krzysztof-gzocha/pingor/pkg/log"
 )
 
 // Checker will make HTTP request to provided URLs and will return positive result if HTTP status will be 200 OK
 type Checker struct {
+	logger     log.LoggerInterface
 	httpClient pkgHttp.ClientInterface
 	urls       []string
 }
 
 // NewChecker will return new instance of Checker
-func NewChecker(httpClient pkgHttp.ClientInterface, urls ...string) Checker {
-	return Checker{httpClient: httpClient, urls: urls}
+func NewChecker(logger log.LoggerInterface, httpClient pkgHttp.ClientInterface, urls ...string) Checker {
+	return Checker{logger: logger, httpClient: httpClient, urls: urls}
 }
 
 // Check will send HTTP request to all provided URLs and check HTTP statuses of the response.
@@ -49,13 +50,15 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 
 	overallResult.Time /= time.Duration(len(overallResult.SubResults))
 	overallResult.SuccessRate /= float32(len(overallResult.SubResults))
-	logrus.WithField("successRate", overallResult.SuccessRate*100).Debugf("%T: done", c)
+	c.logger.
+		WithField("successRate", overallResult.SuccessRate*100).
+		Debugf("HTTP check is done")
 
 	return overallResult
 }
 
 func (c Checker) singleCheck(ctx context.Context, url string) result.ResultInterface {
-	logrus.WithField("url", url).Debugf("%T: starting to check", c)
+	c.logger.WithField("url", url).Debugf("Starting to check for HTTP status")
 
 	res := result.Result{Success: true}
 	start := time.Now()

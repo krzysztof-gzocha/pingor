@@ -9,6 +9,7 @@ import (
 
 	"context"
 
+	internalMock "github.com/krzysztof-gzocha/pingor/pkg/mock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -22,7 +23,7 @@ func TestNewDNSChecker(t *testing.T) {
 		Once().
 		Return(result, nil)
 
-	checker := NewChecker(successDnsMock, "wp.pl")
+	checker := NewChecker(&internalMock.Logger{}, successDnsMock, "wp.pl")
 	assert.Equal(t, checker.dns, successDnsMock)
 	assert.Len(t, checker.hosts, 1)
 }
@@ -41,27 +42,47 @@ func TestDNSChecker_Check(t *testing.T) {
 		Times(len(hosts)).
 		Return(dnsResult, errors.New("error"))
 
-	checker := NewChecker(successDnsMock, hosts...)
+	logger := &internalMock.Logger{}
+	logger.On("WithField", "host", "wp.pl")
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	logger.On("WithField", "host", "onet.pl")
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	logger.On("WithField", "successRate", mock.Anything)
+	logger.On("Debugf", mock.Anything, mock.Anything)
+
+	checker := NewChecker(logger, successDnsMock, hosts...)
 	result := checker.Check(context.TODO())
 	assert.True(t, result.IsSuccess())
 	assert.Equal(t, result.GetTime(), time.Second)
 	assert.Len(t, result.GetSubResults(), 2)
 	assert.True(t, successDnsMock.AssertExpectations(t))
+	logger.AssertExpectations(t)
 
-	checker = NewChecker(unsuccessfulDnsMock, hosts...)
+	logger = &internalMock.Logger{}
+	logger.On("WithField", "host", "wp.pl")
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	logger.On("WithField", "host", "onet.pl")
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	logger.On("WithField", "successRate", mock.Anything)
+	logger.On("Debugf", mock.Anything, mock.Anything)
+
+	checker = NewChecker(logger, unsuccessfulDnsMock, hosts...)
 	result = checker.Check(context.TODO())
 	assert.False(t, result.IsSuccess())
 	assert.Equal(t, result.GetTime(), time.Second)
 	assert.Len(t, result.GetSubResults(), 2)
 	assert.Equal(t, "Checking DNS with 2 hosts", result.GetMessage())
 	assert.True(t, unsuccessfulDnsMock.AssertExpectations(t))
+	logger.AssertExpectations(t)
 
-	checker = NewChecker(successDnsMock)
+	logger = &internalMock.Logger{}
+	checker = NewChecker(logger, successDnsMock)
 	result = checker.Check(context.TODO())
 	assert.False(t, result.IsSuccess())
 	assert.Zero(t, result.GetSubResults())
 	assert.Zero(t, result.GetSuccessRate())
 	assert.Zero(t, result.GetTime())
+	logger.AssertExpectations(t)
 }
 
 type dnsMock struct {

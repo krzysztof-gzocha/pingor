@@ -11,20 +11,26 @@ import (
 
 	"errors"
 
-	"github.com/krzysztof-gzocha/pingor/pkg/mock"
+	pkgMock "github.com/krzysztof-gzocha/pingor/pkg/mock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNewChecker(t *testing.T) {
-	client := mock.HttpClientMock{}
-	c := NewChecker(client, "https://google.com")
+	client := pkgMock.HttpClientMock{}
+	c := NewChecker(&pkgMock.Logger{}, client, "https://google.com")
 
 	assert.NotNil(t, c)
 	assert.IsType(t, Checker{}, c)
 }
 
 func TestChecker_Check_Success(t *testing.T) {
-	client := mock.HttpClientMock{}
+	logger := &pkgMock.Logger{}
+	logger.On("WithField", "url", "google.com")
+	logger.On("WithField", "url", "wp.pl")
+	logger.On("WithField", "successRate", mock.Anything)
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	client := pkgMock.HttpClientMock{}
 	client.
 		On("Get", "google.com").
 		Once().
@@ -35,7 +41,7 @@ func TestChecker_Check_Success(t *testing.T) {
 		Once().
 		Return(&http.Response{StatusCode: http.StatusOK}, nil)
 
-	c := NewChecker(client, "google.com", "wp.pl")
+	c := NewChecker(logger, client, "google.com", "wp.pl")
 	result := c.Check(context.TODO())
 
 	assert.True(t, result.IsSuccess())
@@ -43,10 +49,16 @@ func TestChecker_Check_Success(t *testing.T) {
 	assert.NotEmpty(t, result.GetTime())
 	assert.NotEmpty(t, result.GetMessage())
 	assert.Len(t, result.GetSubResults(), 2)
+	logger.AssertExpectations(t)
 }
 
 func TestChecker_Check_BadStatusCode(t *testing.T) {
-	client := mock.HttpClientMock{}
+	logger := &pkgMock.Logger{}
+	logger.On("WithField", "url", "google.com")
+	logger.On("WithField", "url", "wp.pl")
+	logger.On("WithField", "successRate", mock.Anything)
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	client := pkgMock.HttpClientMock{}
 	client.
 		On("Get", "google.com").
 		Once().
@@ -57,7 +69,7 @@ func TestChecker_Check_BadStatusCode(t *testing.T) {
 		Once().
 		Return(&http.Response{StatusCode: http.StatusNotFound}, nil)
 
-	c := NewChecker(client, "google.com", "wp.pl")
+	c := NewChecker(logger, client, "google.com", "wp.pl")
 	result := c.Check(context.TODO())
 
 	assert.False(t, result.IsSuccess())
@@ -65,10 +77,16 @@ func TestChecker_Check_BadStatusCode(t *testing.T) {
 	assert.NotEmpty(t, result.GetTime())
 	assert.NotEmpty(t, result.GetMessage())
 	assert.Len(t, result.GetSubResults(), 2)
+	logger.AssertExpectations(t)
 }
 
 func TestChecker_Check_ErrorClient(t *testing.T) {
-	client := mock.HttpClientMock{}
+	logger := &pkgMock.Logger{}
+	logger.On("WithField", "url", "google.com")
+	logger.On("WithField", "url", "wp.pl")
+	logger.On("WithField", "successRate", mock.Anything)
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	client := pkgMock.HttpClientMock{}
 	client.
 		On("Get", "google.com").
 		Once().
@@ -79,7 +97,7 @@ func TestChecker_Check_ErrorClient(t *testing.T) {
 		Once().
 		Return(&http.Response{StatusCode: http.StatusNotFound}, errors.New("client err"))
 
-	c := NewChecker(client, "google.com", "wp.pl")
+	c := NewChecker(logger, client, "google.com", "wp.pl")
 	result := c.Check(context.TODO())
 
 	assert.False(t, result.IsSuccess())
@@ -87,11 +105,13 @@ func TestChecker_Check_ErrorClient(t *testing.T) {
 	assert.NotEmpty(t, result.GetTime())
 	assert.NotEmpty(t, result.GetMessage())
 	assert.Len(t, result.GetSubResults(), 2)
+	logger.AssertExpectations(t)
 }
 
 func TestChecker_Check_NoUrlProvided(t *testing.T) {
-	client := mock.HttpClientMock{}
-	c := NewChecker(client)
+	logger := &pkgMock.Logger{}
+	client := pkgMock.HttpClientMock{}
+	c := NewChecker(logger, client)
 	result := c.Check(context.TODO())
 
 	assert.False(t, result.IsSuccess())
@@ -99,4 +119,5 @@ func TestChecker_Check_NoUrlProvided(t *testing.T) {
 	assert.Empty(t, result.GetTime())
 	assert.Empty(t, result.GetMessage())
 	assert.Len(t, result.GetSubResults(), 0)
+	logger.AssertExpectations(t)
 }

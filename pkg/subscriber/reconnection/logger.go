@@ -5,19 +5,20 @@ import (
 
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/formatter"
+	"github.com/krzysztof-gzocha/pingor/pkg/log"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 )
 
 // Logger contains required things to log information about reconnection to the CLI
 type Logger struct {
-	pr formatter.Func
+	logger log.LoggerInterface
+	pr     formatter.Func
 }
 
 // NewLogger will return Logger struct
-func NewLogger(pr formatter.Func) *Logger {
-	return &Logger{pr: pr}
+func NewLogger(logger log.LoggerInterface, pr formatter.Func) *Logger {
+	return &Logger{logger: logger, pr: pr}
 }
 
 // LogReconnection will use logrus to log the information about reconnection
@@ -32,7 +33,7 @@ func (l Logger) LogReconnection(args interface{}) {
 		res = fmt.Sprintf("Error during formatting: %s", err.Error())
 	}
 
-	logrus.
+	l.logger.
 		WithField("lastSuccessTime", event.LastSuccess.GetMeasuredAt().Format(time.RFC3339)).
 		WithField("firstConnectionDrop", event.FirstConnectionDrop.GetMeasuredAt().Format(time.RFC3339)).
 		WithField("lastConnectionDrop", event.LastConnectionDrop.GetMeasuredAt().Format(time.RFC3339)).

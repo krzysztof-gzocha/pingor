@@ -5,19 +5,20 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
+	"github.com/krzysztof-gzocha/pingor/pkg/log"
 )
 
 // Checker will try to resolve provided hosts into IPs in order to check the connection to DNS
 type Checker struct {
-	dns   ResolverInterface
-	hosts []string
+	logger log.LoggerInterface
+	dns    ResolverInterface
+	hosts  []string
 }
 
 // NewChecker will return new instance of Checker
-func NewChecker(dns ResolverInterface, hosts ...string) Checker {
-	return Checker{dns: dns, hosts: hosts}
+func NewChecker(logger log.LoggerInterface, dns ResolverInterface, hosts ...string) Checker {
+	return Checker{logger: logger, dns: dns, hosts: hosts}
 }
 
 // Check will try to resolve provided hosts into IPs in order to check the connection to DNS.
@@ -33,14 +34,18 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	}
 
 	overallResult = c.calculateOverallChecker(overallResult)
-	logrus.WithField("successRate", overallResult.SuccessRate*100).Debugf("%T: done", c)
+	c.logger.
+		WithField("successRate", overallResult.SuccessRate*100).
+		Debugf("%T: done", c)
 
 	return overallResult
 }
 
 func (c Checker) singleCheck(ctx context.Context, host string) result.ResultInterface {
 	res := result.Result{Success: true}
-	logrus.WithField("host", host).Debugf("%T: starting to check", c)
+	c.logger.
+		WithField("host", host).
+		Debugf("%T: starting to check", c)
 
 	dnsResult, err := c.dns.ResolveHost(host)
 	res.Time = dnsResult.Time

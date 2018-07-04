@@ -21,6 +21,7 @@ func TestNewPeriodicCheckerWrapper(t *testing.T) {
 	eventDispatcherMock := eventDispatcherMock{}
 
 	checker := NewChecker(
+		&pkgMock.Logger{},
 		eventDispatcherMock,
 		subChecker,
 		time.Second,
@@ -32,6 +33,9 @@ func TestNewPeriodicCheckerWrapper(t *testing.T) {
 }
 
 func TestPeriodicCheckerWrapper_Check(t *testing.T) {
+	logger := &pkgMock.Logger{}
+	logger.On("Debugf", mock.Anything, mock.Anything)
+	logger.On("WithField", "period", mock.Anything)
 	ctx, cancelFunc := context.WithCancel(context.TODO())
 	subChecker := pkgMock.CheckerMock{}
 	eventDispatcherMock := eventDispatcherMock{}
@@ -44,6 +48,7 @@ func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 		Times(3)
 
 	checker := NewChecker(
+		logger,
 		eventDispatcherMock,
 		subChecker,
 		time.Millisecond*100,
@@ -60,15 +65,18 @@ func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 
 	assert.True(t, subChecker.AssertExpectations(t))
 	assert.True(t, eventDispatcherMock.AssertExpectations(t))
+	logger.AssertExpectations(t)
 }
 
 func TestPeriodicCheckerWrapper_newPeriod(t *testing.T) {
+	logger := &pkgMock.Logger{}
 	subChecker := pkgMock.CheckerMock{}
 	eventDispatcherMock := eventDispatcherMock{}
 
 	minimalPeriod := time.Millisecond * 500
 	maximalPeriod := time.Minute
 	checker := NewChecker(
+		logger,
 		eventDispatcherMock,
 		subChecker,
 		minimalPeriod,
@@ -90,6 +98,7 @@ func TestPeriodicCheckerWrapper_newPeriod(t *testing.T) {
 		newPeriod := checker.newPeriod(scenario.time, scenario.res)
 		assert.Equal(t, scenario.expected, newPeriod)
 	}
+	logger.AssertExpectations(t)
 }
 
 type eventDispatcherMock struct {
