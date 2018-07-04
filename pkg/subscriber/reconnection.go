@@ -7,6 +7,7 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
 )
 
+// ReconnectionEventName will be used as event name when dispatching info about reconnection
 const ReconnectionEventName = "reconnected"
 
 // ReconnectionEvent will be used when reconnection was detected
