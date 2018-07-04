@@ -5,10 +5,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// DynamoPutItemMock is just a mock
 type DynamoPutItemMock struct {
 	mock.Mock
 }
 
+// DynamoPutItemMock is just a mock
 func (m DynamoPutItemMock) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
 	args := m.Called(input)
 

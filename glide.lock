@@ -1,8 +1,8 @@
-hash: 47bb249589e857fb20d2fcb1028fe83c845be84e568ce1470db8db34d44a8869
-updated: 2018-06-21T21:32:06.036612171+02:00
+hash: 830f4df1befbd90490f72d70d1abf8386f837dfb83ef4912abe5e16ae3e68ab9
+updated: 2018-07-04T17:09:32.039268653+02:00
 imports:
 - name: github.com/aws/aws-sdk-go
-  version: e4805606f5138247510183050abe642344275ebd
+  version: e4f914808a9655ef3220bb0082002239cc7f3561
   subpackages:
   - aws
   - aws/awserr
@@ -53,7 +53,7 @@ imports:
   subpackages:
   - difflib
 - name: github.com/Sirupsen/logrus
-  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/stretchr/objx
   version: 0ab728f62c7f6fcd754334f7931c2dd659dce1d1
 - name: github.com/stretchr/testify

@@ -17,6 +17,7 @@ type Record struct {
 	CurrentResult    result.TimeResultInterface `json:"current_result"`
 }
 
+// Transform will transform ReconnectionEvent into Record
 func Transform(event subscriber.ReconnectionEvent) Record {
 	date := time.Now()
 	if event.CurrentResult != nil {

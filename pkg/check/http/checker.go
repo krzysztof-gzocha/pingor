@@ -22,6 +22,8 @@ func NewChecker(httpClient pkgHttp.ClientInterface, urls ...string) Checker {
 	return Checker{httpClient: httpClient, urls: urls}
 }
 
+// Check will send HTTP request to all provided URLs and check HTTP statuses of the response.
+// Status code have to be "200" to be recognized as success.
 func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	if len(c.urls) == 0 {
 		return result.Result{}

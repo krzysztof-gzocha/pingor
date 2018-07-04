@@ -9,11 +9,13 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// CheckerMock is mocking Checker
 type CheckerMock struct {
 	mock.Mock
 	Result result.ResultInterface
 }
 
+// Check is mocking Checker.Check
 func (m CheckerMock) Check(ctx context.Context) result.ResultInterface {
 	args := m.Called(ctx)
 	return args.Get(0).(result.ResultInterface)

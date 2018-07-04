@@ -5,10 +5,12 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// Marshaller is just a mock
 type Marshaller struct {
 	mock.Mock
 }
 
+// MarshalMap is just a mock
 func (m Marshaller) MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	args := m.Called(in)
 
