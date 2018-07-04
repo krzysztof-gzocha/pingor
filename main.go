@@ -14,7 +14,6 @@ import (
 	httpCheck "github.com/krzysztof-gzocha/pingor/pkg/check/http"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/multiple"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/periodic"
-	"github.com/krzysztof-gzocha/pingor/pkg/check/ping"
 	"github.com/krzysztof-gzocha/pingor/pkg/config"
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
 	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/dynamodb"
@@ -89,10 +88,6 @@ func attachSubscribers(dispatcher event.DispatcherInterface, cfg config.Config) 
 
 func getCheckers(cfg config.Config) []check.CheckerInterface {
 	checkers := make([]check.CheckerInterface, 0)
-
-	if len(cfg.Ping.IPs) > 0 {
-		checkers = append(checkers, ping.NewChecker(ping.Command{}, cfg.Ping.IPs...))
-	}
 
 	if len(cfg.Dns.Hosts) > 0 {
 		checkers = append(checkers, dns.NewChecker(dns.Dns{}, cfg.Dns.Hosts...))

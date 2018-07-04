@@ -1,7 +1,6 @@
 package config
 
 import (
-	"net"
 	"time"
 
 	"github.com/jinzhu/configor"
@@ -11,7 +10,6 @@ import (
 // Config will hold already parsed information
 type Config struct {
 	rawConfig
-	Ping                  PingConfig
 	SuccessTimeThreshold  time.Duration
 	SingleCheckTimeout    time.Duration
 	MinimalCheckingPeriod time.Duration
@@ -23,25 +21,15 @@ type DnsConfig struct {
 	Hosts []string
 }
 
-// PingConfig holds all the information required to perform ping checks
-type PingConfig struct {
-	IPs []net.IP
-}
-
 type rawConfig struct {
 	Dns                         DnsConfig
-	RawPing                     rawPingConfig `yaml:"ping"`
-	Http                        HttpConfig    `yaml:"http"`
-	Persister                   Persister     `yaml:"persister"`
-	SuccessRateThreshold        float32       `yaml:"success_rate_threshold"`
-	SuccessTimeThresholdString  string        `yaml:"success_time_threshold"`
-	SingleCheckTimeoutString    string        `yaml:"single_check_timeout"`
-	MinimalCheckingPeriodString string        `yaml:"minimal_checking_period"`
-	MaximalCheckingPeriodString string        `yaml:"maximal_checking_period"`
-}
-
-type rawPingConfig struct {
-	IpStrings []string `yaml:"ips"`
+	Http                        HttpConfig `yaml:"http"`
+	Persister                   Persister  `yaml:"persister"`
+	SuccessRateThreshold        float32    `yaml:"success_rate_threshold"`
+	SuccessTimeThresholdString  string     `yaml:"success_time_threshold"`
+	SingleCheckTimeoutString    string     `yaml:"single_check_timeout"`
+	MinimalCheckingPeriodString string     `yaml:"minimal_checking_period"`
+	MaximalCheckingPeriodString string     `yaml:"maximal_checking_period"`
 }
 
 type HttpConfig struct {
@@ -96,17 +84,6 @@ func transformFromRawConfig(rawConfig rawConfig) (Config, error) {
 		return c, errors.Wrapf(err, "Could not parse maximal checking period: %s", rawConfig.SuccessTimeThresholdString)
 	}
 	c.MaximalCheckingPeriod = maximalCheckingPeriod
-	c.Ping = transformFromRawPingConfig(c.RawPing)
 
 	return c, nil
-}
-
-// transformFromRawPingConfig will read the strings from RawPingConfig and parse them into PingConfig struct
-func transformFromRawPingConfig(rpc rawPingConfig) PingConfig {
-	results := make([]net.IP, len(rpc.IpStrings))
-	for k, ipString := range rpc.IpStrings {
-		results[k] = net.ParseIP(ipString)
-	}
-
-	return PingConfig{IPs: results}
 }
