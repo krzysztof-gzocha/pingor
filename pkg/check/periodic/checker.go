@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
+	"github.com/krzysztof-gzocha/pingor/pkg/log"
 )
 
 // ConnectionCheckEventName will be used as event name when dispatching information about new connection check result
@@ -17,6 +17,7 @@ const ConnectionCheckEventName = "connection.check"
 // Period will be getting longer (up to maximalCheckingPeriod) if connection is stable. If any error will be detected, the period
 // will go back to minimalCheckingPeriod. It will check success rate and result's time against provided threshold to check if connection is ok or not.
 type Checker struct {
+	logger                log.LoggerInterface
 	eventDispatcher       event.DispatcherInterface
 	checker               check.CheckerInterface
 	successRateThreshold  float32
@@ -27,12 +28,14 @@ type Checker struct {
 
 // NewChecker will return new Checker
 func NewChecker(
+	logger log.LoggerInterface,
 	eventDispatcher event.DispatcherInterface,
 	checker check.CheckerInterface,
 	minimalCheckingPeriod,
 	maximalCheckingPeriod time.Duration,
 ) Checker {
 	return Checker{
+		logger:                logger,
 		eventDispatcher:       eventDispatcher,
 		checker:               checker,
 		minimalCheckingPeriod: minimalCheckingPeriod,
@@ -52,10 +55,11 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 func (c Checker) periodicCheck(ctx context.Context) {
 	currentPeriod := c.minimalCheckingPeriod
 	for {
-		logrus.WithField("period", currentPeriod.String()).Debugf("%T: Waiting for %s before next check", c, currentPeriod.String())
+		c.logger.
+			WithField("period", currentPeriod.String()).
+			Debugf("%T: Waiting for %s before next check", c, currentPeriod.String())
 		select {
 		case <-ctx.Done():
-			logrus.Debugf("%T: exit", c)
 			return
 		case <-time.After(currentPeriod):
 		}

@@ -6,14 +6,15 @@ import (
 
 	"sync"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/krzysztof-gzocha/pingor/pkg/check"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
+	"github.com/krzysztof-gzocha/pingor/pkg/log"
 )
 
 // Checker is able to aggregate multiple checkers and treat them as single checker.
 // Result will be combination of all the results from individual checkers
 type Checker struct {
+	logger               log.LoggerInterface
 	checkers             []check.CheckerInterface
 	successRateThreshold float32
 	successTimeThreshold time.Duration
@@ -22,12 +23,14 @@ type Checker struct {
 
 // NewChecker will return instance of Checker
 func NewChecker(
+	logger log.LoggerInterface,
 	singleCheckTimeout time.Duration,
 	successRateThreshold float32,
 	successTimeThreshold time.Duration,
 	checkers ...check.CheckerInterface,
 ) Checker {
 	return Checker{
+		logger:               logger,
 		singleCheckTimeout:   singleCheckTimeout,
 		successRateThreshold: successRateThreshold,
 		successTimeThreshold: successTimeThreshold,
@@ -70,7 +73,7 @@ func (c Checker) singleCheck(
 	wg *sync.WaitGroup,
 	overallResult *result.Result,
 ) {
-	logrus.Debugf("%T: Starting checker: %T", c, checker)
+	c.logger.Debugf("%T: Starting checker: %T", c, checker)
 	wrappedCtx, cancelFunc := context.WithTimeout(ctx, c.singleCheckTimeout)
 	singleResult := checker.Check(wrappedCtx)
 	cancelFunc()
@@ -78,6 +81,6 @@ func (c Checker) singleCheck(
 		overallResult.Success = false
 	}
 	overallResult.SubResults = append(overallResult.SubResults, singleResult)
-	logrus.Debugf("%T: Checker %T is done", c, checker)
+	c.logger.Debugf("%T: Checker %T is done", c, checker)
 	wg.Done()
 }
