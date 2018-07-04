@@ -8,10 +8,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+// DynamoPutItemInterface is interface used to simply inject and test AWS DynamoDB interaction
 type DynamoPutItemInterface interface {
 	PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 }
 
+// Persister is a struct responsible to store information about provided recordds
 type Persister struct {
 	client     DynamoPutItemInterface
 	config     config.DynamoDbPersister

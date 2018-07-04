@@ -32,14 +32,17 @@ type rawConfig struct {
 	MaximalCheckingPeriodString string     `yaml:"maximal_checking_period"`
 }
 
+// HttpConfig is struct responsible to store all information about testing connection with HTTP
 type HttpConfig struct {
 	Urls []string `yaml:"urls"`
 }
 
+// Persister is a struct responsible to store all information about possible persisters (like DynamoDB)
 type Persister struct {
 	DynamoDB DynamoDbPersister `yaml:"dynamodb"`
 }
 
+// DynamoDbPersister is a struct responsible to store all information about AWS DynamoDB persister
 type DynamoDbPersister struct {
 	Enabled    bool   `yaml:"enabled"`
 	Region     string `yaml:"region"`

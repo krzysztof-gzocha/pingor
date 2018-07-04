@@ -10,8 +10,7 @@ Currently pinGOr is logging all information to console and persist reconnection 
 # How?
 PinGOr will read provided config and try to:
 - resolve provided host names to IPs,
-- inspect HTTP statuses of provided URLs,
-- run ping command on the host to specified IPs.
+- inspect HTTP statuses for provided URLs.
 
 It will start checking the connection after configured minimal checking period and if the connection will be ok the period will be doubled.
 When connection checks will drop below configured success rate threshold, then the connection will be marked as "dropped" and proper log will be created.
@@ -58,12 +57,6 @@ dns:
     - google.com
     - upc.pl
     - mbank.pl
-ping:
-  ips:   # IPs to ping in order to confirm connection is working. Leave empty to skip ping checks
-    - 8.8.8.8
-    - 8.8.4.4
-    - 9.9.9.9
-    - 1.1.1.1
 ```
 
 # Recommended usage

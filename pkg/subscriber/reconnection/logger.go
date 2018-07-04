@@ -10,10 +10,12 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 )
 
+// Logger contains required things to log information about reconnection to the CLI
 type Logger struct {
 	pr formatter.Func
 }
 
+// NewLogger will return Logger struct
 func NewLogger(pr formatter.Func) *Logger {
 	return &Logger{pr: pr}
 }
