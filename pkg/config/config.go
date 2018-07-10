@@ -9,7 +9,7 @@ import (
 
 // Config will hold already parsed information
 type Config struct {
-	rawConfig
+	RawConfig
 	SuccessTimeThreshold  time.Duration
 	SingleCheckTimeout    time.Duration
 	MinimalCheckingPeriod time.Duration
@@ -21,7 +21,7 @@ type DnsConfig struct {
 	Hosts []string
 }
 
-type rawConfig struct {
+type RawConfig struct {
 	Dns                         DnsConfig
 	Http                        HttpConfig `yaml:"http"`
 	Persister                   Persister  `yaml:"persister"`
@@ -52,7 +52,7 @@ type DynamoDbPersister struct {
 
 // Load will use 3rd party vendor to parse the file and return parsed config
 func Load(fileName string) (Config, error) {
-	rawConfig := rawConfig{}
+	rawConfig := RawConfig{}
 	err := configor.Load(&rawConfig, fileName)
 	if err != nil {
 		return Config{}, errors.Wrapf(err, "Could not load config from file: '%s'", fileName)
@@ -62,8 +62,8 @@ func Load(fileName string) (Config, error) {
 }
 
 // transformFromRawConfig will read the strings from RawConfig and parse them into Config struct
-func transformFromRawConfig(rawConfig rawConfig) (Config, error) {
-	c := Config{rawConfig: rawConfig}
+func transformFromRawConfig(rawConfig RawConfig) (Config, error) {
+	c := Config{RawConfig: rawConfig}
 	successTime, err := time.ParseDuration(rawConfig.SuccessTimeThresholdString)
 	if err != nil {
 		return c, errors.Wrapf(err, "Could not parse success time threshold: %s", rawConfig.SuccessTimeThresholdString)

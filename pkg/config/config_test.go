@@ -20,7 +20,7 @@ func TestLoad(t *testing.T) {
 }
 
 func TestTransformation(t *testing.T) {
-	rawConfig := rawConfig{
+	rawConfig := RawConfig{
 		SuccessTimeThresholdString:  "10s",
 		SingleCheckTimeoutString:    "10m",
 		MinimalCheckingPeriodString: "100ms",
@@ -39,7 +39,7 @@ func TestTransformationErrors(t *testing.T) {
 	correctDuration := "1m"
 	incorrectDuration := "some bad string"
 
-	configs := []rawConfig{
+	configs := []RawConfig{
 		{SuccessTimeThresholdString: incorrectDuration},
 		{
 			SuccessTimeThresholdString: correctDuration,

@@ -44,9 +44,13 @@ func main() {
 		logrus.Fatalf("Could not load config: %s", err.Error())
 	}
 
+	run(context.Background(), cfg, logger)
+}
+
+func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 	// EventDispatcher with subscribers
 	eventDispatcher := event.NewDispatcher()
-	err = attachSubscribers(logger, eventDispatcher, cfg)
+	err := attachSubscribers(logger, eventDispatcher, cfg)
 	if err != nil {
 		logrus.Fatalf("Could not attach subscribers: %s", err.Error())
 	}
@@ -67,7 +71,7 @@ func main() {
 	)
 
 	// Main logic
-	checker.Check(context.Background())
+	checker.Check(ctx)
 }
 
 func attachSubscribers(logger log.LoggerInterface, dispatcher event.DispatcherInterface, cfg config.Config) error {
