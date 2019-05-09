@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -44,7 +43,7 @@ func main() {
 		logrus.Fatalf("Could not load config: %s", err.Error())
 	}
 
-	run(context.Background(), cfg, logger)
+	go run(context.Background(), cfg, logger)
 }
 
 func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
