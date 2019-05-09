@@ -1,8 +1,8 @@
 success_rate_threshold: 0.74
 success_time_threshold: 1s
 single_check_timeout: 10s
-minimal_checking_period: 30s
-maximal_checking_period: 30m
+minimal_checking_period: 15s
+maximal_checking_period: 15s
 persister:
   dynamodb:
     enabled: true
@@ -22,3 +22,6 @@ dns:
     - google.com
     - upc.pl
     - mbank.pl
+metrics:
+  enabled: true
+  port: 9111

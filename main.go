@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"net"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -16,11 +17,13 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/config"
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
 	"github.com/krzysztof-gzocha/pingor/pkg/log"
+	"github.com/krzysztof-gzocha/pingor/pkg/metric"
 	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/dynamodb"
 	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/session"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber/reconnection"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -40,10 +43,23 @@ func main() {
 	// Configs
 	cfg, err := config.Load(*configFile)
 	if err != nil {
-		logrus.Fatalf("Could not load config: %s", err.Error())
+		logger.Errorf("Could not load config: %s", err.Error())
+		return
+	}
+
+	if !cfg.Metrics.Enabled {
+		run(context.Background(), cfg, logger)
+		return
 	}
 
 	go run(context.Background(), cfg, logger)
+
+	logger.Infof("Starting /metrics endpoint")
+	http.Handle("/metrics", promhttp.Handler())
+	httpErr := http.ListenAndServe(net.JoinHostPort("", cfg.Metrics.Port), nil)
+	if httpErr != nil {
+		logrus.Fatalf(httpErr.Error())
+	}
 }
 
 func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
@@ -58,13 +74,13 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 	checker := periodic.NewChecker(
 		logger,
 		eventDispatcher,
-		multiple.NewChecker(
+		metric.NewInstrumentedChecker(multiple.NewChecker(
 			logger,
 			cfg.SingleCheckTimeout,
 			cfg.SuccessRateThreshold,
 			cfg.SuccessTimeThreshold,
 			getCheckers(logger, cfg)...,
-		),
+		)),
 		cfg.MinimalCheckingPeriod,
 		cfg.MaximalCheckingPeriod,
 	)

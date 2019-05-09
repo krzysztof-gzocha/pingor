@@ -27,12 +27,14 @@ func NewChecker(logger log.LoggerInterface, httpClient pkgHttp.ClientInterface, 
 // Status code have to be "200" to be recognized as success.
 func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	if len(c.urls) == 0 {
-		return result.Result{}
+		return Result{}
 	}
 
-	overallResult := result.Result{
-		Success: true,
-		Message: fmt.Sprintf("Checking HTTP status for %d URLs", len(c.urls)),
+	overallResult := Result{
+		Result: result.Result{
+			Success: true,
+			Message: fmt.Sprintf("Checking HTTP status for %d URLs", len(c.urls)),
+		},
 	}
 
 	for _, url := range c.urls {
@@ -57,10 +59,11 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 	return overallResult
 }
 
+// @todo move single check to separate checker, write instrumentation for it
 func (c Checker) singleCheck(ctx context.Context, url string) result.ResultInterface {
 	c.logger.WithField("url", url).Debugf("Starting to check for HTTP status")
 
-	res := result.Result{Success: true}
+	res := Result{Result: result.Result{Success: true}, URL: url}
 	start := time.Now()
 	resp, err := c.httpClient.Get(url)
 	diff := time.Now().Sub(start)
