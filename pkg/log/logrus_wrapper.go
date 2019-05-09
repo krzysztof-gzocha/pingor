@@ -31,7 +31,7 @@ func (l *LogrusWrapper) Debugf(format string, args ...interface{}) {
 	l.logger.Debugf(format, args...)
 }
 
-// Debugf will call underlaying logrus.Debugf
+// Infof will call underlaying logrus.Infof
 func (l *LogrusWrapper) Infof(format string, args ...interface{}) {
 	l.logger.Infof(format, args...)
 }

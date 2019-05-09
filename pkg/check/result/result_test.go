@@ -34,6 +34,10 @@ func TestResult_GetSubResults(t *testing.T) {
 	res := Result{SubResults: []ResultInterface{Result{Success: true}, Result{Success: true}}}
 	assert.Len(t, res.GetSubResults(), 2)
 }
+func TestResult_GetURL(t *testing.T) {
+	res := Result{URL: "test"}
+	assert.Equal(t, res.GetURL(), "test")
+}
 
 func TestResult_MarshalJSON(t *testing.T) {
 	originalResult := Result{

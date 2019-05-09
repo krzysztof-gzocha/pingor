@@ -10,7 +10,7 @@ type ChecksLogger struct {
 	logger log.LoggerInterface
 }
 
-// NewConnectionLogger will return ChecksLogger
+// NewChecksLogger will return ChecksLogger
 func NewChecksLogger(logger log.LoggerInterface) *ChecksLogger {
 	return &ChecksLogger{logger: logger}
 }

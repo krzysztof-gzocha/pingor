@@ -10,7 +10,7 @@ type MarshallerInterface interface {
 	MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error)
 }
 
-// Mershaller will re-use dynamodbattribute.MarshalMap function. It's just hidden within the struct for easier testing
+// Marshaller will re-use dynamodbattribute.MarshalMap function. It's just hidden within the struct for easier testing
 type Marshaller struct{}
 
 // MarshalMap will call dynamodbattribute.MarshalMap

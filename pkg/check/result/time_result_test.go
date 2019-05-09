@@ -44,6 +44,11 @@ func TestTimeResult_GetSubResults(t *testing.T) {
 	assert.Equal(t, subRes, res.GetSubResults())
 }
 
+func TestTimeResult_GetURL(t *testing.T) {
+	res := TimeResult{Result: Result{URL: "test"}}
+	assert.Equal(t, res.GetURL(), "test")
+}
+
 func TestTimeResult_GetMeasuredAt(t *testing.T) {
 	now := time.Now()
 	res := TimeResult{MeasuredAt: now}
