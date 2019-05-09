@@ -18,9 +18,7 @@ When connection checks will drop below configured success rate threshold, then t
 # Usage
 In order to build the executable run:
 ```
-curl https://glide.sh/get | sh
-glide install
-go build
+GO111MODULE=on go build
 ```
 In order to run the executable:
 ```
