@@ -15,5 +15,9 @@ type HttpClientMock struct {
 func (m HttpClientMock) Get(url string) (*http.Response, error) {
 	args := m.Called(url)
 
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
 	return args.Get(0).(*http.Response), args.Error(1)
 }

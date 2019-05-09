@@ -40,6 +40,9 @@ func (r invalidResult) GetTime() time.Duration {
 func (r invalidResult) GetMessage() string {
 	return ""
 }
+func (r invalidResult) GetURL() string {
+	return ""
+}
 func (r invalidResult) GetSubResults() []result.ResultInterface {
 	return make([]result.ResultInterface, 0)
 }
