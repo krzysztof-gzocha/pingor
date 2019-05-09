@@ -15,57 +15,25 @@ import (
 type Checker struct {
 	logger     log.LoggerInterface
 	httpClient pkgHttp.ClientInterface
-	urls       []string
+	url        string
 }
 
 // NewChecker will return new instance of Checker
-func NewChecker(logger log.LoggerInterface, httpClient pkgHttp.ClientInterface, urls ...string) Checker {
-	return Checker{logger: logger, httpClient: httpClient, urls: urls}
+func NewChecker(logger log.LoggerInterface, httpClient pkgHttp.ClientInterface, url string) Checker {
+	return Checker{logger: logger, httpClient: httpClient, url: url}
 }
 
 // Check will send HTTP request to all provided URLs and check HTTP statuses of the response.
 // Status code have to be "200" to be recognized as success.
 func (c Checker) Check(ctx context.Context) result.ResultInterface {
-	if len(c.urls) == 0 {
-		return result.Result{}
-	}
+	c.logger.WithField("url", c.url).Debugf("Starting to check for HTTP status")
 
-	overallResult := result.Result{
-		Success: true,
-		Message: fmt.Sprintf("Checking HTTP status for %d URLs", len(c.urls)),
-	}
-
-	for _, url := range c.urls {
-		overallResult.SubResults = append(overallResult.SubResults, c.singleCheck(ctx, url))
-	}
-
-	for _, res := range overallResult.SubResults {
-		if !res.IsSuccess() {
-			overallResult.Success = false
-		}
-
-		overallResult.Time += res.GetTime()
-		overallResult.SuccessRate += res.GetSuccessRate()
-	}
-
-	overallResult.Time /= time.Duration(len(overallResult.SubResults))
-	overallResult.SuccessRate /= float32(len(overallResult.SubResults))
-	c.logger.
-		WithField("successRate", overallResult.SuccessRate*100).
-		Debugf("HTTP check is done")
-
-	return overallResult
-}
-
-func (c Checker) singleCheck(ctx context.Context, url string) result.ResultInterface {
-	c.logger.WithField("url", url).Debugf("Starting to check for HTTP status")
-
-	res := result.Result{Success: true}
+	res := result.Result{Success: true, URL: c.url}
 	start := time.Now()
-	resp, err := c.httpClient.Get(url)
+	resp, err := c.httpClient.Get(c.url)
 	diff := time.Now().Sub(start)
 	if err != nil {
-		res.Message = fmt.Sprintf("%T:%s: Failed to get URL: %s", c, url, err.Error())
+		res.Message = fmt.Sprintf("%T:%s: Failed to get URL: %s", c, c.url, err.Error())
 		res.Success = false
 		res.SuccessRate = 0
 
@@ -74,14 +42,14 @@ func (c Checker) singleCheck(ctx context.Context, url string) result.ResultInter
 
 	if resp.StatusCode != http.StatusOK {
 		res.Success = false
-		res.Message = fmt.Sprintf("%T:%s: Expecting status 200, but got %d", c, url, resp.StatusCode)
+		res.Message = fmt.Sprintf("%T:%s: Expecting status 200, but got %d", c, c.url, resp.StatusCode)
 		res.SuccessRate = 0
 		res.Time = diff
 
 		return res
 	}
 
-	res.Message = fmt.Sprintf("%T:%s: Status is 200", c, url)
+	res.Message = fmt.Sprintf("%T:%s: Status is 200", c, c.url)
 	res.SuccessRate = 1
 	res.Time = diff
 

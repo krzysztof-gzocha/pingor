@@ -12,6 +12,7 @@ type ResultInterface interface {
 	GetTime() time.Duration
 	GetMessage() string
 	GetSubResults() []ResultInterface
+	GetURL() string
 }
 
 // Result is main data transfer object used to store all the results from checkers
@@ -21,6 +22,7 @@ type Result struct {
 	Time        time.Duration     `json:"time"`
 	Message     string            `json:"message,omitempty"`
 	SubResults  []ResultInterface `json:"sub_results,omitempty"`
+	URL         string            `json:"url,omitempty"`
 }
 
 // MarshalJSON will encode Result into JSON with time parsed into string
@@ -64,4 +66,9 @@ func (r Result) GetMessage() string {
 // Might be useful for human-readable reports
 func (r Result) GetSubResults() []ResultInterface {
 	return r.SubResults
+}
+
+// GetURL will return testing URL
+func (r Result) GetURL() string {
+	return r.URL
 }

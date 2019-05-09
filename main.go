@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"net"
 	"net/http"
 
 	"github.com/Sirupsen/logrus"
@@ -16,11 +17,13 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/config"
 	"github.com/krzysztof-gzocha/pingor/pkg/event"
 	"github.com/krzysztof-gzocha/pingor/pkg/log"
+	"github.com/krzysztof-gzocha/pingor/pkg/metric"
 	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/dynamodb"
 	"github.com/krzysztof-gzocha/pingor/pkg/persister/aws/session"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber/reconnection"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -40,10 +43,23 @@ func main() {
 	// Configs
 	cfg, err := config.Load(*configFile)
 	if err != nil {
-		logrus.Fatalf("Could not load config: %s", err.Error())
+		logger.Errorf("Could not load config: %s", err.Error())
+		return
+	}
+
+	if !cfg.Metrics.Enabled {
+		run(context.Background(), cfg, logger)
+		return
 	}
 
 	go run(context.Background(), cfg, logger)
+
+	logger.Infof("Starting /metrics endpoint")
+	http.Handle("/metrics", promhttp.Handler())
+	httpErr := http.ListenAndServe(net.JoinHostPort("", cfg.Metrics.Port), nil)
+	if httpErr != nil {
+		logrus.Fatalf(httpErr.Error())
+	}
 }
 
 func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
@@ -54,17 +70,23 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 		logrus.Fatalf("Could not attach subscribers: %s", err.Error())
 	}
 
+	mainChecker := check.CheckerInterface(multiple.NewChecker(
+		logger,
+		cfg.SingleCheckTimeout,
+		cfg.SuccessRateThreshold,
+		cfg.SuccessTimeThreshold,
+		getCheckers(logger, cfg)...,
+	))
+
+	if cfg.Metrics.Enabled {
+		mainChecker = metric.NewInstrumentedSuccessRateChecker(mainChecker)
+	}
+
 	// Main checker
 	checker := periodic.NewChecker(
 		logger,
 		eventDispatcher,
-		multiple.NewChecker(
-			logger,
-			cfg.SingleCheckTimeout,
-			cfg.SuccessRateThreshold,
-			cfg.SuccessTimeThreshold,
-			getCheckers(logger, cfg)...,
-		),
+		mainChecker,
 		cfg.MinimalCheckingPeriod,
 		cfg.MaximalCheckingPeriod,
 	)
@@ -105,11 +127,49 @@ func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerI
 	checkers := make([]check.CheckerInterface, 0)
 
 	if len(cfg.Dns.Hosts) > 0 {
-		checkers = append(checkers, dns.NewChecker(logger, dns.Dns{}, cfg.Dns.Hosts...))
+		dnsClient := dns.Dns{}
+		dnsCheckers := make([]check.CheckerInterface, 0)
+		for _, url := range cfg.Dns.Hosts {
+			var checker check.CheckerInterface = dns.NewChecker(logger, dnsClient, url)
+			if cfg.Metrics.Enabled {
+				checker = metric.NewInstrumentedDnsChecker(checker)
+			}
+			dnsCheckers = append(
+				dnsCheckers,
+				checker,
+			)
+		}
+
+		checkers = append(checkers, multiple.NewChecker(
+			logger,
+			cfg.SingleCheckTimeout,
+			cfg.SuccessRateThreshold,
+			cfg.SuccessTimeThreshold,
+			dnsCheckers...,
+		))
 	}
 
 	if len(cfg.Http.Urls) > 0 {
-		checkers = append(checkers, httpCheck.NewChecker(logger, http.DefaultClient, cfg.Http.Urls...))
+		httpCheckers := make([]check.CheckerInterface, 0)
+		for _, url := range cfg.Http.Urls {
+			var checker check.CheckerInterface = httpCheck.NewChecker(logger, http.DefaultClient, url)
+			if cfg.Metrics.Enabled {
+				checker = metric.NewInstrumentedHttpChecker(checker)
+			}
+
+			httpCheckers = append(
+				httpCheckers,
+				checker,
+			)
+		}
+
+		checkers = append(checkers, multiple.NewChecker(
+			logger,
+			cfg.SingleCheckTimeout,
+			cfg.SuccessRateThreshold,
+			cfg.SuccessTimeThreshold,
+			httpCheckers...,
+		))
 	}
 
 	return checkers

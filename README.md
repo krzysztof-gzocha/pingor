@@ -38,7 +38,7 @@ minimal_checking_period: 1m   # Minimal, starting period for periodic checks. Wi
 maximal_checking_period: 30m  # Maximal period for periodic checks
 persister:
   dynamodb:
-    enabled: true             # Store reconnection events in DynamoDB?
+    enabled: false            # Store reconnection events in DynamoDB?
     region: eu-west-1         # Which AWS region should be used?
     table_name: pingor        # Which table?
     device_name: pc1          # How to call this device in DynamoDB?
@@ -55,6 +55,10 @@ dns:
     - google.com
     - upc.pl
     - mbank.pl
+
+metrics:
+  enabled: false    # Serve /metrics endpoint for Prometheus?
+  port: 9111
 ```
 
 # Recommended usage
@@ -77,7 +81,16 @@ Environment=AWS_SECRET_ACCESS_KEY=....YOUR SECRET..... # EDIT THIS
 [Install]
 WantedBy=multi-user.target
 ```
-After configuring it you can inspect the logs (or AWS DynamoDB) to check for connection disruption
+After configuring it you can inspect the logs (or AWS DynamoDB) to check for connection disruption or connect
+`/metrics` endpoint with Prometheus by adding this to it's config:
+```
+scrape_configs:
+  # some other jobs
+
+  - job_name: 'pingor'
+    static_configs:
+      - targets: ['127.0.0.1:9111'] # Port needs to be the same as configured in pingor
+```
 
 # Using AWS DynamoDB
 In order to persist reconnection events to AWS DynamoDB you have to specify your access and secret keys as environment variables.

@@ -1,24 +1,25 @@
 success_rate_threshold: 0.74
 success_time_threshold: 1s
 single_check_timeout: 10s
-minimal_checking_period: 30s
-maximal_checking_period: 30m
+minimal_checking_period: 15s
+maximal_checking_period: 60s
 persister:
   dynamodb:
-    enabled: true
+    enabled: false
     region: eu-west-1
     table_name: pingor
     device_name: pc1
 http:
   urls:
-    - https://wp.pl
-    - https://www.onet.pl
     - https://www.google.com
-    - https://www.upc.pl
+    - https://www.facebook.com
+    - https://www.twitter.com
 dns:
   hosts:
-    - wp.pl
-    - onet.pl
     - google.com
-    - upc.pl
-    - mbank.pl
+    - facebook.com
+    - twitter.com
+    - github.com
+metrics:
+  enabled: false
+  port: 9111

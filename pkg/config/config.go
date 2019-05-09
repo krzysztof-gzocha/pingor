@@ -21,6 +21,7 @@ type DnsConfig struct {
 	Hosts []string
 }
 
+// RawConfig represents raw values taken directly from files
 type RawConfig struct {
 	Dns                         DnsConfig
 	Http                        HttpConfig `yaml:"http"`
@@ -30,6 +31,13 @@ type RawConfig struct {
 	SingleCheckTimeoutString    string     `yaml:"single_check_timeout"`
 	MinimalCheckingPeriodString string     `yaml:"minimal_checking_period"`
 	MaximalCheckingPeriodString string     `yaml:"maximal_checking_period"`
+	Metrics                     Metrics    `yaml:"metrics"`
+}
+
+// Metrics will hold all information required for running Prometheus metrics
+type Metrics struct {
+	Enabled bool   `yaml:"enabled"`
+	Port    string `yaml:"port"`
 }
 
 // HttpConfig is struct responsible to store all information about testing connection with HTTP
