@@ -1,11 +1,9 @@
-[![Build Status](https://travis-ci.org/krzysztof-gzocha/pingor.svg?branch=master)](https://travis-ci.org/krzysztof-gzocha/pingor)
-[![Go Report Card](https://goreportcard.com/badge/github.com/krzysztof-gzocha/pingor)](https://goreportcard.com/report/github.com/krzysztof-gzocha/pingor)
-[![codecov](https://codecov.io/gh/krzysztof-gzocha/pingor/branch/master/graph/badge.svg)](https://codecov.io/gh/krzysztof-gzocha/pingor)
-
-# pinGOr
+# pinGOr [![Build Status](https://travis-ci.org/krzysztof-gzocha/pingor.svg?branch=master)](https://travis-ci.org/krzysztof-gzocha/pingor)[![Go Report Card](https://goreportcard.com/badge/github.com/krzysztof-gzocha/pingor)](https://goreportcard.com/report/github.com/krzysztof-gzocha/pingor)[![codecov](https://codecov.io/gh/krzysztof-gzocha/pingor/branch/master/graph/badge.svg)](https://codecov.io/gh/krzysztof-gzocha/pingor)
 Create logs about disconnections with Golang.
 Run pinGOr and see it's logs to know if your internet connection was interrupted or not.
-Currently pinGOr is logging all information to console and persist reconnection events to DynamoDB (if configured)
+Currently pinGOr can log all information to console, persist reconnection events to DynamoDB and open `/metrics` endpoint for Prometheus
+
+![Grafana example](https://user-images.githubusercontent.com/3098559/57466049-27c34600-7280-11e9-8fe7-47e9287821f1.png)
 
 # How?
 PinGOr will read provided config and try to:
