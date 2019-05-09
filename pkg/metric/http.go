@@ -1,7 +1,9 @@
 package metric
 
 import (
-	"github.com/krzysztof-gzocha/pingor/pkg/check/http"
+	"context"
+
+	"github.com/krzysztof-gzocha/pingor/pkg/check"
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -20,34 +22,53 @@ var (
 		Help: "HTTP response time presented in nano seconds",
 	}), []string{"url"})
 
-	// dnsResponsesTimes = promauto.NewGaugeVec(prometheus.GaugeOpts(prometheus.Opts{
-	// 	Name: "dns_pingor_response_times_ns",
-	// 	Help: "DNS response time in nano seconds",
-	// }), []string{"url"})
+	dnsResponsesTimes = promauto.NewGaugeVec(prometheus.GaugeOpts(prometheus.Opts{
+		Name: "dns_pingor_response_times_ns",
+		Help: "DNS response time presented in nano seconds",
+	}), []string{"url"})
 )
 
-func RegisterResult(res result.ResultInterface) {
-	httpSuccessRate.Set(float64(res.GetSuccessRate()))
-
-	iterateSubResults(res, func(res result.ResultInterface) {
-		switch res.(type) {
-		case http.Result:
-			registerHTTPResult(res.(http.Result))
-		}
-	})
+type InstrumentedGaugeChecker struct {
+	checker check.CheckerInterface
+	gauge   *prometheus.GaugeVec
 }
 
-func registerHTTPResult(res http.Result) {
-	httpResponsesTimes.
-		WithLabelValues(res.URL).
-		Set(float64(res.GetTime().Nanoseconds()))
+type InstrumentedSuccessRateChecker struct {
+	checker check.CheckerInterface
 }
 
-func iterateSubResults(res result.ResultInterface, callback func(res result.ResultInterface)) {
-	for _, innerRes := range res.GetSubResults() {
-		callback(innerRes)
-		if len(innerRes.GetSubResults()) > 0 {
-			iterateSubResults(innerRes, callback)
-		}
+func NewInstrumentedHttpChecker(checker check.CheckerInterface) *InstrumentedGaugeChecker {
+	return &InstrumentedGaugeChecker{
+		checker: checker,
+		gauge:   httpResponsesTimes,
 	}
+}
+
+func NewInstrumentedDnsChecker(checker check.CheckerInterface) *InstrumentedGaugeChecker {
+	return &InstrumentedGaugeChecker{
+		checker: checker,
+		gauge:   dnsResponsesTimes,
+	}
+}
+
+func NewInstrumentedSuccessRateChecker(checker check.CheckerInterface) *InstrumentedSuccessRateChecker {
+	return &InstrumentedSuccessRateChecker{
+		checker: checker,
+	}
+}
+
+func (i *InstrumentedGaugeChecker) Check(ctx context.Context) result.ResultInterface {
+	checkResult := i.checker.Check(ctx)
+	i.gauge.
+		WithLabelValues(checkResult.GetURL()).
+		Set(float64(checkResult.GetTime().Nanoseconds()))
+
+	return checkResult
+}
+
+func (i *InstrumentedSuccessRateChecker) Check(ctx context.Context) result.ResultInterface {
+	checkResult := i.checker.Check(ctx)
+	httpSuccessRate.Set(float64(checkResult.GetSuccessRate()))
+
+	return checkResult
 }

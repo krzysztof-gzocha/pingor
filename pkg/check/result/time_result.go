@@ -43,3 +43,8 @@ func (t TimeResult) GetSubResults() []ResultInterface {
 func (t TimeResult) GetMeasuredAt() time.Time {
 	return t.MeasuredAt
 }
+
+// GetURL will return testing URL
+func (t TimeResult) GetURL() string {
+	return t.Result.GetURL()
+}

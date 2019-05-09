@@ -74,7 +74,7 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 	checker := periodic.NewChecker(
 		logger,
 		eventDispatcher,
-		metric.NewInstrumentedChecker(multiple.NewChecker(
+		metric.NewInstrumentedSuccessRateChecker(multiple.NewChecker(
 			logger,
 			cfg.SingleCheckTimeout,
 			cfg.SuccessRateThreshold,
@@ -121,11 +121,40 @@ func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerI
 	checkers := make([]check.CheckerInterface, 0)
 
 	if len(cfg.Dns.Hosts) > 0 {
-		checkers = append(checkers, dns.NewChecker(logger, dns.Dns{}, cfg.Dns.Hosts...))
+		dnsClient := dns.Dns{}
+		dnsCheckers := make([]check.CheckerInterface, 0)
+		for _, url := range cfg.Dns.Hosts {
+			dnsCheckers = append(
+				dnsCheckers,
+				metric.NewInstrumentedDnsChecker(dns.NewChecker(logger, dnsClient, url)),
+			)
+		}
+
+		checkers = append(checkers, multiple.NewChecker(
+			logger,
+			cfg.SingleCheckTimeout,
+			cfg.SuccessRateThreshold,
+			cfg.SuccessTimeThreshold,
+			dnsCheckers...,
+		))
 	}
 
 	if len(cfg.Http.Urls) > 0 {
-		checkers = append(checkers, httpCheck.NewChecker(logger, http.DefaultClient, cfg.Http.Urls...))
+		httpCheckers := make([]check.CheckerInterface, 0)
+		for _, url := range cfg.Http.Urls {
+			httpCheckers = append(
+				httpCheckers,
+				metric.NewInstrumentedHttpChecker(httpCheck.NewChecker(logger, http.DefaultClient, url)),
+			)
+		}
+
+		checkers = append(checkers, multiple.NewChecker(
+			logger,
+			cfg.SingleCheckTimeout,
+			cfg.SuccessRateThreshold,
+			cfg.SuccessTimeThreshold,
+			httpCheckers...,
+		))
 	}
 
 	return checkers
