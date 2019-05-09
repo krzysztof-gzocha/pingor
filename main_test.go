@@ -47,3 +47,17 @@ func TestRun_NotPanics_WithoutDynamoDB(t *testing.T) {
 		run(ctx, cfg, &log.Nil{})
 	})
 }
+
+func TestGetCheckers(t *testing.T) {
+	logger := &log.Nil{}
+	cfg := config.Config{
+		RawConfig: config.RawConfig{
+			Metrics: config.Metrics{Enabled: true},
+			Dns:     config.DnsConfig{Hosts: []string{"wp.pl"}},
+			Http:    config.HttpConfig{Urls: []string{"wp.pl"}},
+		},
+	}
+
+	checkers := getCheckers(logger, cfg)
+	assert.Len(t, checkers, 2)
+}

@@ -70,17 +70,23 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 		logrus.Fatalf("Could not attach subscribers: %s", err.Error())
 	}
 
+	mainChecker := check.CheckerInterface(multiple.NewChecker(
+		logger,
+		cfg.SingleCheckTimeout,
+		cfg.SuccessRateThreshold,
+		cfg.SuccessTimeThreshold,
+		getCheckers(logger, cfg)...,
+	))
+
+	if cfg.Metrics.Enabled {
+		mainChecker = metric.NewInstrumentedSuccessRateChecker(mainChecker)
+	}
+
 	// Main checker
 	checker := periodic.NewChecker(
 		logger,
 		eventDispatcher,
-		metric.NewInstrumentedSuccessRateChecker(multiple.NewChecker(
-			logger,
-			cfg.SingleCheckTimeout,
-			cfg.SuccessRateThreshold,
-			cfg.SuccessTimeThreshold,
-			getCheckers(logger, cfg)...,
-		)),
+		mainChecker,
 		cfg.MinimalCheckingPeriod,
 		cfg.MaximalCheckingPeriod,
 	)
@@ -124,9 +130,13 @@ func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerI
 		dnsClient := dns.Dns{}
 		dnsCheckers := make([]check.CheckerInterface, 0)
 		for _, url := range cfg.Dns.Hosts {
+			var checker check.CheckerInterface = dns.NewChecker(logger, dnsClient, url)
+			if cfg.Metrics.Enabled {
+				checker = metric.NewInstrumentedDnsChecker(checker)
+			}
 			dnsCheckers = append(
 				dnsCheckers,
-				metric.NewInstrumentedDnsChecker(dns.NewChecker(logger, dnsClient, url)),
+				checker,
 			)
 		}
 
@@ -142,9 +152,14 @@ func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerI
 	if len(cfg.Http.Urls) > 0 {
 		httpCheckers := make([]check.CheckerInterface, 0)
 		for _, url := range cfg.Http.Urls {
+			var checker check.CheckerInterface = httpCheck.NewChecker(logger, http.DefaultClient, url)
+			if cfg.Metrics.Enabled {
+				checker = metric.NewInstrumentedHttpChecker(checker)
+			}
+
 			httpCheckers = append(
 				httpCheckers,
-				metric.NewInstrumentedHttpChecker(httpCheck.NewChecker(logger, http.DefaultClient, url)),
+				checker,
 			)
 		}
 
