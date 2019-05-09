@@ -104,6 +104,14 @@ I have signed SLA agreement with my ISP, but didn't have any tool to actually kn
 All ideas and pull requests are welcomed and appreciated.
 If you have any problem with usage don't hesitate to create an issue, we can figure out your problem together.
 
+# Result in Grafa
+You could configure Grafana to communicate with Prometheus and display the metrics in beautiful way
+
+![Grafana example 1](https://user-images.githubusercontent.com/3098559/57466049-27c34600-7280-11e9-8fe7-47e9287821f1.png)
+![Grafana example 2](https://user-images.githubusercontent.com/3098559/57467910-bd140980-7283-11e9-8ae6-a66dc4115003.png)
+![Grafana example 3](https://user-images.githubusercontent.com/3098559/57467915-beddcd00-7283-11e9-9a83-3d8a93ee9c16.png)
+
+
 # Author
 Krzysztof Gzocha
 [![](https://img.shields.io/badge/Twitter-%40kgzocha-blue.svg)](https://twitter.com/kgzocha)
