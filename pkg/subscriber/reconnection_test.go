@@ -16,8 +16,8 @@ func TestReconnectionEvent_DisconnectionDuration_Success(t *testing.T) {
 	now := time.Now()
 	after := now.Add(time.Second)
 	e := ReconnectionEvent{
-		CurrentResult:       result.TimeResult{MeasuredAt: after},
-		FirstConnectionDrop: result.TimeResult{MeasuredAt: now},
+		CurrentResult:       result.DefaultMeasuredAtResult{MeasuredAt: after},
+		FirstConnectionDrop: result.DefaultMeasuredAtResult{MeasuredAt: now},
 	}
 
 	assert.Equal(t, time.Second, e.DisconnectionDuration())
@@ -38,13 +38,13 @@ func TestReconnection_NotifyAboutReconnection_BadArgument(t *testing.T) {
 
 func TestReconnection_NotifyAboutReconnection_Reconnected(t *testing.T) {
 	now := time.Now()
-	badResult := result.TimeResult{
+	badResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: false},
+		Result:     result.DefaultResult{Success: false},
 	}
-	goodResult := result.TimeResult{
+	goodResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: true},
+		Result:     result.DefaultResult{Success: true},
 	}
 	expectedEvent := ReconnectionEvent{
 		LastSuccess:         goodResult,
@@ -70,17 +70,17 @@ func TestReconnection_NotifyAboutReconnection_Reconnected(t *testing.T) {
 
 func TestReconnection_NotifyAboutReconnection_ReconnectedSeveralChecks(t *testing.T) {
 	now := time.Now()
-	badResult := result.TimeResult{
+	badResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: false},
+		Result:     result.DefaultResult{Success: false},
 	}
-	secondBadResult := result.TimeResult{
+	secondBadResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: false},
+		Result:     result.DefaultResult{Success: false},
 	}
-	goodResult := result.TimeResult{
+	goodResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: true},
+		Result:     result.DefaultResult{Success: true},
 	}
 	expectedEvent := ReconnectionEvent{
 		LastSuccess:         goodResult,
@@ -109,13 +109,13 @@ func TestReconnection_NotifyAboutReconnection_ReconnectedSeveralChecks(t *testin
 
 func TestReconnection_NotifyAboutReconnection_ConnectionDropped(t *testing.T) {
 	now := time.Now()
-	badResult := result.TimeResult{
+	badResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: false},
+		Result:     result.DefaultResult{Success: false},
 	}
-	goodResult := result.TimeResult{
+	goodResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: true},
+		Result:     result.DefaultResult{Success: true},
 	}
 
 	eventDispatcher := &mock.EventDispatcher{}
@@ -131,9 +131,9 @@ func TestReconnection_NotifyAboutReconnection_ConnectionDropped(t *testing.T) {
 
 func TestReconnection_NotifyAboutReconnection_StillNoConnection(t *testing.T) {
 	now := time.Now()
-	badResult := result.TimeResult{
+	badResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: false},
+		Result:     result.DefaultResult{Success: false},
 	}
 
 	eventDispatcher := &mock.EventDispatcher{}
@@ -150,9 +150,9 @@ func TestReconnection_NotifyAboutReconnection_StillNoConnection(t *testing.T) {
 
 func TestReconnection_NotifyAboutReconnection_StillConnected(t *testing.T) {
 	now := time.Now()
-	badResult := result.TimeResult{
+	badResult := result.DefaultMeasuredAtResult{
 		MeasuredAt: now,
-		Result:     result.Result{Success: true},
+		Result:     result.DefaultResult{Success: true},
 	}
 
 	eventDispatcher := &mock.EventDispatcher{}

@@ -28,7 +28,7 @@ func TestLogConnectionCheckResult_EmptyResult(t *testing.T) {
 
 	checkLogger := NewChecksLogger(logger)
 	assert.NotPanics(t, func() {
-		checkLogger.LogConnectionCheckResult(result.Result{})
+		checkLogger.LogConnectionCheckResult(result.DefaultResult{})
 	})
 	logger.AssertExpectations(t)
 }
@@ -40,7 +40,7 @@ func TestLogConnectionCheckResult_FullResult(t *testing.T) {
 	logger.On("Infof", mock.Anything, mock.Anything)
 	checkLogger := NewChecksLogger(logger)
 	assert.NotPanics(t, func() {
-		checkLogger.LogConnectionCheckResult(result.Result{
+		checkLogger.LogConnectionCheckResult(result.DefaultResult{
 			Time:        time.Second,
 			SuccessRate: 75,
 		})

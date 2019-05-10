@@ -14,7 +14,7 @@ import (
 func TestInstrumentedSuccessRateChecker_Check(t *testing.T) {
 	checkerMock := &mock.CheckerMock{}
 	ctx := context.TODO()
-	innerResult := result.Result{}
+	innerResult := result.DefaultResult{}
 	checkerMock.On("Check", ctx).Once().Return(innerResult)
 
 	checker := NewInstrumentedSuccessRateChecker(checkerMock)

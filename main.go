@@ -62,7 +62,7 @@ func main() {
 	}
 }
 
-func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
+func run(ctx context.Context, cfg config.Config, logger log.Logger) {
 	// EventDispatcher with subscribers
 	eventDispatcher := event.NewDispatcher()
 	err := attachSubscribers(logger, eventDispatcher, cfg)
@@ -70,7 +70,7 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 		logrus.Fatalf("Could not attach subscribers: %s", err.Error())
 	}
 
-	mainChecker := check.CheckerInterface(multiple.NewChecker(
+	mainChecker := check.Checker(multiple.NewChecker(
 		logger,
 		cfg.SingleCheckTimeout,
 		cfg.SuccessRateThreshold,
@@ -95,7 +95,7 @@ func run(ctx context.Context, cfg config.Config, logger log.LoggerInterface) {
 	checker.Check(ctx)
 }
 
-func attachSubscribers(logger log.LoggerInterface, dispatcher event.DispatcherInterface, cfg config.Config) error {
+func attachSubscribers(logger log.Logger, dispatcher event.Dispatcher, cfg config.Config) error {
 	checkLogger := subscriber.NewChecksLogger(logger)
 	dispatcher.AttachSubscriber(periodic.ConnectionCheckEventName, checkLogger.LogConnectionCheckResult)
 
@@ -123,14 +123,14 @@ func attachSubscribers(logger log.LoggerInterface, dispatcher event.DispatcherIn
 	return nil
 }
 
-func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerInterface {
-	checkers := make([]check.CheckerInterface, 0)
+func getCheckers(logger log.Logger, cfg config.Config) []check.Checker {
+	checkers := make([]check.Checker, 0)
 
 	if len(cfg.Dns.Hosts) > 0 {
 		dnsClient := dns.Dns{}
-		dnsCheckers := make([]check.CheckerInterface, 0)
+		dnsCheckers := make([]check.Checker, 0)
 		for _, url := range cfg.Dns.Hosts {
-			var checker check.CheckerInterface = dns.NewChecker(logger, dnsClient, url)
+			var checker check.Checker = dns.NewChecker(logger, dnsClient, url)
 			if cfg.Metrics.Enabled {
 				checker = metric.NewInstrumentedDnsChecker(checker)
 			}
@@ -150,9 +150,9 @@ func getCheckers(logger log.LoggerInterface, cfg config.Config) []check.CheckerI
 	}
 
 	if len(cfg.Http.Urls) > 0 {
-		httpCheckers := make([]check.CheckerInterface, 0)
+		httpCheckers := make([]check.Checker, 0)
 		for _, url := range cfg.Http.Urls {
-			var checker check.CheckerInterface = httpCheck.NewChecker(logger, http.DefaultClient, url)
+			var checker check.Checker = httpCheck.NewChecker(logger, http.DefaultClient, url)
 			if cfg.Metrics.Enabled {
 				checker = metric.NewInstrumentedHttpChecker(checker)
 			}

@@ -55,8 +55,8 @@ func TestPersister_Persist_DynamoError(t *testing.T) {
 
 func TestPersister_Persist_MarshalError(t *testing.T) {
 	res := record.Record{
-		CurrentResult: result.TimeResult{
-			Result: result.Result{SuccessRate: float32(math.NaN())}},
+		CurrentResult: result.DefaultMeasuredAtResult{
+			Result: result.DefaultResult{SuccessRate: float32(math.NaN())}},
 	}
 	d := pkgMock.DynamoPutItemMock{}
 

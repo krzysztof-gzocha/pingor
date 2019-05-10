@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-// ResolverInterface should be implemented by any service capable of resolving host into IP
-type ResolverInterface interface {
+// Resolver should be implemented by any service capable of resolving host into IP
+type Resolver interface {
 	ResolveHost(host string) (Result, error)
 }
 

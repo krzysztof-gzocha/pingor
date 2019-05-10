@@ -7,17 +7,17 @@ import (
 
 // ChecksLogger holds methods to log information about connection checks
 type ChecksLogger struct {
-	logger log.LoggerInterface
+	logger log.Logger
 }
 
 // NewChecksLogger will return ChecksLogger
-func NewChecksLogger(logger log.LoggerInterface) *ChecksLogger {
+func NewChecksLogger(logger log.Logger) *ChecksLogger {
 	return &ChecksLogger{logger: logger}
 }
 
 // LogConnectionCheckResult is subscriber that can be used to print basic connection check results in the console
 func (c *ChecksLogger) LogConnectionCheckResult(arg interface{}) {
-	res, ok := arg.(result.ResultInterface)
+	res, ok := arg.(result.Result)
 	if !ok {
 		return
 	}

@@ -17,9 +17,9 @@ const ConnectionCheckEventName = "connection.check"
 // Period will be getting longer (up to maximalCheckingPeriod) if connection is stable. If any error will be detected, the period
 // will go back to minimalCheckingPeriod. It will check success rate and result's time against provided threshold to check if connection is ok or not.
 type Checker struct {
-	logger                log.LoggerInterface
-	eventDispatcher       event.DispatcherInterface
-	checker               check.CheckerInterface
+	logger                log.Logger
+	eventDispatcher       event.Dispatcher
+	checker               check.Checker
 	successRateThreshold  float32
 	successTimeThreshold  time.Duration
 	minimalCheckingPeriod time.Duration
@@ -28,9 +28,9 @@ type Checker struct {
 
 // NewChecker will return new Checker
 func NewChecker(
-	logger log.LoggerInterface,
-	eventDispatcher event.DispatcherInterface,
-	checker check.CheckerInterface,
+	logger log.Logger,
+	eventDispatcher event.Dispatcher,
+	checker check.Checker,
 	minimalCheckingPeriod,
 	maximalCheckingPeriod time.Duration,
 ) Checker {
@@ -44,10 +44,10 @@ func NewChecker(
 }
 
 // Check should be used to actually start checking process. In order to kill it, you have to kill it's context.
-func (c Checker) Check(ctx context.Context) result.ResultInterface {
+func (c Checker) Check(ctx context.Context) result.Result {
 	c.periodicCheck(ctx)
 
-	return result.Result{}
+	return result.DefaultResult{}
 }
 
 // periodicCheck will run periodic checks on provided checker.
@@ -64,13 +64,13 @@ func (c Checker) periodicCheck(ctx context.Context) {
 		case <-time.After(currentPeriod):
 		}
 
-		res := result.TimeResult{Result: c.checker.Check(ctx), MeasuredAt: time.Now()}
+		res := result.DefaultMeasuredAtResult{Result: c.checker.Check(ctx), MeasuredAt: time.Now()}
 		c.eventDispatcher.Dispatch(ConnectionCheckEventName, res)
 		currentPeriod = c.newPeriod(currentPeriod, res)
 	}
 }
 
-func (c Checker) newPeriod(currentPeriod time.Duration, result result.ResultInterface) time.Duration {
+func (c Checker) newPeriod(currentPeriod time.Duration, result result.Result) time.Duration {
 	if !result.IsSuccess() {
 		return c.minimalCheckingPeriod
 	}

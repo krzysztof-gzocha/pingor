@@ -29,35 +29,35 @@ var (
 )
 
 type InstrumentedGaugeChecker struct {
-	checker check.CheckerInterface
+	checker check.Checker
 	gauge   *prometheus.GaugeVec
 }
 
 type InstrumentedSuccessRateChecker struct {
-	checker check.CheckerInterface
+	checker check.Checker
 }
 
-func NewInstrumentedHttpChecker(checker check.CheckerInterface) *InstrumentedGaugeChecker {
+func NewInstrumentedHttpChecker(checker check.Checker) *InstrumentedGaugeChecker {
 	return &InstrumentedGaugeChecker{
 		checker: checker,
 		gauge:   httpResponsesTimes,
 	}
 }
 
-func NewInstrumentedDnsChecker(checker check.CheckerInterface) *InstrumentedGaugeChecker {
+func NewInstrumentedDnsChecker(checker check.Checker) *InstrumentedGaugeChecker {
 	return &InstrumentedGaugeChecker{
 		checker: checker,
 		gauge:   dnsResponsesTimes,
 	}
 }
 
-func NewInstrumentedSuccessRateChecker(checker check.CheckerInterface) *InstrumentedSuccessRateChecker {
+func NewInstrumentedSuccessRateChecker(checker check.Checker) *InstrumentedSuccessRateChecker {
 	return &InstrumentedSuccessRateChecker{
 		checker: checker,
 	}
 }
 
-func (i *InstrumentedGaugeChecker) Check(ctx context.Context) result.ResultInterface {
+func (i *InstrumentedGaugeChecker) Check(ctx context.Context) result.Result {
 	checkResult := i.checker.Check(ctx)
 	i.gauge.
 		WithLabelValues(checkResult.GetURL()).
@@ -66,7 +66,7 @@ func (i *InstrumentedGaugeChecker) Check(ctx context.Context) result.ResultInter
 	return checkResult
 }
 
-func (i *InstrumentedSuccessRateChecker) Check(ctx context.Context) result.ResultInterface {
+func (i *InstrumentedSuccessRateChecker) Check(ctx context.Context) result.Result {
 	checkResult := i.checker.Check(ctx)
 	httpSuccessRate.Set(float64(checkResult.GetSuccessRate()))
 

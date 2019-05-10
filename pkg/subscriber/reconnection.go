@@ -12,10 +12,10 @@ const ReconnectionEventName = "reconnected"
 
 // ReconnectionEvent will be used when reconnection was detected
 type ReconnectionEvent struct {
-	LastSuccess         result.TimeResultInterface `json:"last_success"`
-	FirstConnectionDrop result.TimeResultInterface `json:"first_connection_drop"`
-	LastConnectionDrop  result.TimeResultInterface `json:"last_connection_drop"`
-	CurrentResult       result.TimeResultInterface `json:"current_result"`
+	LastSuccess         result.MeasuredAtResult `json:"last_success"`
+	FirstConnectionDrop result.MeasuredAtResult `json:"first_connection_drop"`
+	LastConnectionDrop  result.MeasuredAtResult `json:"last_connection_drop"`
+	CurrentResult       result.MeasuredAtResult `json:"current_result"`
 }
 
 // DisconnectionDuration will return disconnection duration
@@ -29,16 +29,16 @@ func (r ReconnectionEvent) DisconnectionDuration() time.Duration {
 
 // Reconnection subscriber is responsible to check if connection was re-established. If so it will create proper log about it.
 type Reconnection struct {
-	dispatcher        event.DispatcherInterface
-	previousResult    result.TimeResultInterface
-	lastSuccessResult result.TimeResultInterface
-	firstDropResult   result.TimeResultInterface
-	lastDropResult    result.TimeResultInterface
+	dispatcher        event.Dispatcher
+	previousResult    result.MeasuredAtResult
+	lastSuccessResult result.MeasuredAtResult
+	firstDropResult   result.MeasuredAtResult
+	lastDropResult    result.MeasuredAtResult
 }
 
 // NewReconnection will return a pointer to Reconnection
 func NewReconnection(
-	dispatcher event.DispatcherInterface,
+	dispatcher event.Dispatcher,
 ) *Reconnection {
 	return &Reconnection{
 		dispatcher: dispatcher,
@@ -47,7 +47,7 @@ func NewReconnection(
 
 // NotifyAboutReconnection is subscriber method that will trigger an event when reconnection was detected
 func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
-	res, ok := arg.(result.TimeResultInterface)
+	res, ok := arg.(result.MeasuredAtResult)
 	if !ok {
 		return
 	}
@@ -94,7 +94,7 @@ func (r *Reconnection) NotifyAboutReconnection(arg interface{}) {
 	r.previousResult = res
 }
 
-func (r *Reconnection) prepareFirstPreviousResult(result result.TimeResultInterface) {
+func (r *Reconnection) prepareFirstPreviousResult(result result.MeasuredAtResult) {
 	r.previousResult = result
 	if !r.previousResult.IsSuccess() {
 		r.firstDropResult = result

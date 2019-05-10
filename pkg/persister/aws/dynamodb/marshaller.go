@@ -5,15 +5,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-// MarshallerInterface is an interface helping with testing dynamo db persister
-type MarshallerInterface interface {
+// Marshaller is an interface helping with testing dynamo db persister
+type Marshaller interface {
 	MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error)
 }
 
-// Marshaller will re-use dynamodbattribute.MarshalMap function. It's just hidden within the struct for easier testing
-type Marshaller struct{}
+// DynamoMarshaller will re-use dynamodbattribute.MarshalMap function. It's just hidden within the struct for easier testing
+type DynamoMarshaller struct{}
 
 // MarshalMap will call dynamodbattribute.MarshalMap
-func (m Marshaller) MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error) {
+func (m DynamoMarshaller) MarshalMap(in interface{}) (map[string]*dynamodb.AttributeValue, error) {
 	return dynamodbattribute.MarshalMap(in)
 }

@@ -13,6 +13,6 @@ func (n *Nil) Infof(format string, args ...interface{}) {}
 func (n *Nil) Debugf(format string, args ...interface{}) {}
 
 // WithField will do nothing
-func (n *Nil) WithField(key string, value interface{}) LoggerInterface {
+func (n *Nil) WithField(key string, value interface{}) Logger {
 	return n
 }

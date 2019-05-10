@@ -13,22 +13,22 @@ import (
 
 // Checker will make HTTP request to provided URLs and will return positive result if HTTP status will be 200 OK
 type Checker struct {
-	logger     log.LoggerInterface
-	httpClient pkgHttp.ClientInterface
+	logger     log.Logger
+	httpClient pkgHttp.Client
 	url        string
 }
 
 // NewChecker will return new instance of Checker
-func NewChecker(logger log.LoggerInterface, httpClient pkgHttp.ClientInterface, url string) Checker {
+func NewChecker(logger log.Logger, httpClient pkgHttp.Client, url string) Checker {
 	return Checker{logger: logger, httpClient: httpClient, url: url}
 }
 
 // Check will send HTTP request to all provided URLs and check HTTP statuses of the response.
 // Status code have to be "200" to be recognized as success.
-func (c Checker) Check(ctx context.Context) result.ResultInterface {
+func (c Checker) Check(ctx context.Context) result.Result {
 	c.logger.WithField("url", c.url).Debugf("Starting to check for HTTP status")
 
-	res := result.Result{Success: true, URL: c.url}
+	res := result.DefaultResult{Success: true, URL: c.url}
 	start := time.Now()
 	resp, err := c.httpClient.Get(c.url)
 	diff := time.Now().Sub(start)

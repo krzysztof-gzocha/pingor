@@ -25,7 +25,7 @@ func (m *Logger) Debugf(format string, args ...interface{}) {
 }
 
 // WithField mock
-func (m *Logger) WithField(key string, value interface{}) log.LoggerInterface {
+func (m *Logger) WithField(key string, value interface{}) log.Logger {
 	m.Called(key, value)
 
 	return m

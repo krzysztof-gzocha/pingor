@@ -6,7 +6,7 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/check/result"
 )
 
-// CheckerInterface should be implemented by anything that is able to check current internet connection and return a result
-type CheckerInterface interface {
-	Check(ctx context.Context) result.ResultInterface
+// Checker should be implemented by anything that is able to check current internet connection and return a result
+type Checker interface {
+	Check(ctx context.Context) result.Result
 }

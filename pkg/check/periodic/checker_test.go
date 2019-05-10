@@ -42,9 +42,9 @@ func TestPeriodicCheckerWrapper_Check(t *testing.T) {
 	subChecker.
 		On("Check", ctx).
 		Times(3).
-		Return(result.Result{Success: true, SuccessRate: 1})
+		Return(result.DefaultResult{Success: true, SuccessRate: 1})
 	eventDispatcherMock.
-		On("Dispatch", "connection.check", mock.AnythingOfType("result.TimeResult")).
+		On("Dispatch", "connection.check", mock.AnythingOfType("result.DefaultMeasuredAtResult")).
 		Times(3)
 
 	checker := NewChecker(
@@ -85,13 +85,13 @@ func TestPeriodicCheckerWrapper_newPeriod(t *testing.T) {
 
 	scenarios := []struct {
 		time     time.Duration
-		res      result.Result
+		res      result.DefaultResult
 		expected time.Duration
 	}{
-		{time: time.Second, res: result.Result{Success: false}, expected: minimalPeriod},
-		{time: minimalPeriod * 2, res: result.Result{Success: false}, expected: minimalPeriod},
-		{time: maximalPeriod * 2, res: result.Result{Success: true}, expected: maximalPeriod},
-		{time: maximalPeriod - time.Millisecond, res: result.Result{Success: true}, expected: maximalPeriod},
+		{time: time.Second, res: result.DefaultResult{Success: false}, expected: minimalPeriod},
+		{time: minimalPeriod * 2, res: result.DefaultResult{Success: false}, expected: minimalPeriod},
+		{time: maximalPeriod * 2, res: result.DefaultResult{Success: true}, expected: maximalPeriod},
+		{time: maximalPeriod - time.Millisecond, res: result.DefaultResult{Success: true}, expected: maximalPeriod},
 	}
 
 	for _, scenario := range scenarios {
@@ -105,7 +105,7 @@ type eventDispatcherMock struct {
 	mock.Mock
 }
 
-func (m eventDispatcherMock) AttachSubscriber(eventName string, subscriber event.Subscriber) event.DispatcherInterface {
+func (m eventDispatcherMock) AttachSubscriber(eventName string, subscriber event.Subscriber) event.Dispatcher {
 	m.Called(eventName, subscriber)
 	return m
 }

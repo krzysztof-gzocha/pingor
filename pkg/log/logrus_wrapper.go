@@ -2,13 +2,6 @@ package log
 
 import "github.com/Sirupsen/logrus"
 
-// LogrusLoggerInterface is holding all information required to create structurized logs
-type LogrusLoggerInterface interface {
-	Errorf(format string, args ...interface{})
-	Debugf(format string, args ...interface{})
-	WithField(key string, value interface{}) *logrus.Entry
-}
-
 // LogrusWrapper will wrap Logrus library to be easily testable
 type LogrusWrapper struct {
 	logger logrus.FieldLogger
@@ -37,6 +30,6 @@ func (l *LogrusWrapper) Infof(format string, args ...interface{}) {
 }
 
 // WithField will call underlaying logrus.WithField
-func (l *LogrusWrapper) WithField(format string, args interface{}) LoggerInterface {
+func (l *LogrusWrapper) WithField(format string, args interface{}) Logger {
 	return NewLogrusWrapper(l.logger.WithField(format, args))
 }

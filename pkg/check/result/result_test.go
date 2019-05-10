@@ -11,38 +11,38 @@ import (
 )
 
 func TestResult_IsSuccess(t *testing.T) {
-	res := Result{Success: true}
+	res := DefaultResult{Success: true}
 	assert.True(t, res.IsSuccess())
 }
 
 func TestResult_GetMessage(t *testing.T) {
-	res := Result{Message: "msg"}
+	res := DefaultResult{Message: "msg"}
 	assert.Equal(t, "msg", res.GetMessage())
 }
 
 func TestResult_GetSuccessRate(t *testing.T) {
-	res := Result{SuccessRate: 0.6}
+	res := DefaultResult{SuccessRate: 0.6}
 	assert.Equal(t, float32(0.6), res.GetSuccessRate())
 }
 
 func TestResult_GetTime(t *testing.T) {
-	res := Result{Time: time.Second}
+	res := DefaultResult{Time: time.Second}
 	assert.Equal(t, time.Second, res.GetTime())
 }
 
 func TestResult_GetSubResults(t *testing.T) {
-	res := Result{SubResults: []ResultInterface{Result{Success: true}, Result{Success: true}}}
+	res := DefaultResult{SubResults: []Result{DefaultResult{Success: true}, DefaultResult{Success: true}}}
 	assert.Len(t, res.GetSubResults(), 2)
 }
 func TestResult_GetURL(t *testing.T) {
-	res := Result{URL: "test"}
+	res := DefaultResult{URL: "test"}
 	assert.Equal(t, res.GetURL(), "test")
 }
 
 func TestResult_MarshalJSON(t *testing.T) {
-	originalResult := Result{
+	originalResult := DefaultResult{
 		Message:     "Message",
-		SubResults:  make([]ResultInterface, 0),
+		SubResults:  make([]Result, 0),
 		Success:     true,
 		SuccessRate: 0.75,
 		Time:        time.Second + time.Millisecond,
@@ -50,11 +50,11 @@ func TestResult_MarshalJSON(t *testing.T) {
 	jsonEncoded, err := json.Marshal(originalResult)
 	assert.Nil(t, err)
 	decodedResult := struct {
-		Success     bool              `json:"success,omitempty"`
-		SuccessRate float32           `json:"success_rate"`
-		Time        string            `json:"time"`
-		Message     string            `json:"message,omitempty"`
-		SubResults  []ResultInterface `json:"sub_results,omitempty"`
+		Success     bool     `json:"success,omitempty"`
+		SuccessRate float32  `json:"success_rate"`
+		Time        string   `json:"time"`
+		Message     string   `json:"message,omitempty"`
+		SubResults  []Result `json:"sub_results,omitempty"`
 	}{}
 
 	err = json.Unmarshal([]byte(jsonEncoded), &decodedResult)
