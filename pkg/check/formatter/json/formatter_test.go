@@ -43,6 +43,6 @@ func (r invalidResult) GetMessage() string {
 func (r invalidResult) GetURL() string {
 	return ""
 }
-func (r invalidResult) GetSubResults() []result.ResultInterface {
-	return make([]result.ResultInterface, 0)
+func (r invalidResult) GetSubResults() []result.Result {
+	return make([]result.Result, 0)
 }

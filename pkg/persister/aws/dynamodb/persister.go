@@ -8,24 +8,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-// DynamoPutItemInterface is interface used to simply inject and test AWS DynamoDB interaction
-type DynamoPutItemInterface interface {
+// DynamoPutItem is interface used to simply inject and test AWS DynamoDB interaction
+type DynamoPutItem interface {
 	PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error)
 }
 
 // Persister is a struct responsible to store information about provided recordds
 type Persister struct {
-	client     DynamoPutItemInterface
+	client     DynamoPutItem
 	config     config.DynamoDbPersister
-	marshaller MarshallerInterface
+	marshaller Marshaller
 }
 
 // NewPersister will return new DynamoDB persister
-func NewPersister(client DynamoPutItemInterface, config config.DynamoDbPersister) *Persister {
+func NewPersister(client DynamoPutItem, config config.DynamoDbPersister) *Persister {
 	return &Persister{
 		client:     client,
 		config:     config,
-		marshaller: Marshaller{},
+		marshaller: DynamoMarshaller{},
 	}
 }
 

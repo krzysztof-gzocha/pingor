@@ -11,7 +11,7 @@ type EventDispatcher struct {
 }
 
 // AttachSubscriber is just a mock
-func (m *EventDispatcher) AttachSubscriber(eventName string, subscriber event.Subscriber) event.DispatcherInterface {
+func (m *EventDispatcher) AttachSubscriber(eventName string, subscriber event.Subscriber) event.Dispatcher {
 	m.Called(eventName, subscriber)
 
 	return m

@@ -17,10 +17,10 @@ import (
 
 func TestNewMultipleChecker(t *testing.T) {
 	checkerMock := pkgMock.CheckerMock{}
-	checkerMock.On("Check").Return(result.Result{})
+	checkerMock.On("Check").Return(result.DefaultResult{})
 	checker := NewChecker(&pkgMock.Logger{}, time.Second, 1, time.Second, checkerMock, checkerMock)
 
-	assert.Implements(t, (*check.CheckerInterface)(nil), checker)
+	assert.Implements(t, (*check.Checker)(nil), checker)
 	assert.Len(t, checker.checkers, 2)
 	assert.Equal(t, checker.singleCheckTimeout, time.Second)
 }
@@ -30,8 +30,8 @@ func TestMultipleChecker_Check(t *testing.T) {
 	logger.On("Debugf", mock.Anything, mock.Anything)
 
 	ctx := context.TODO()
-	unsuccessfulResult := result.Result{Success: false, SuccessRate: 0.4, Time: time.Millisecond * 40}
-	successfulResult := result.Result{Success: true, SuccessRate: 0.6, Time: time.Millisecond * 60}
+	unsuccessfulResult := result.DefaultResult{Success: false, SuccessRate: 0.4, Time: time.Millisecond * 40}
+	successfulResult := result.DefaultResult{Success: true, SuccessRate: 0.6, Time: time.Millisecond * 60}
 	successChecker := new(pkgMock.CheckerMock)
 	unsuccessfulChecker := pkgMock.CheckerMock{Result: unsuccessfulResult}
 	successChecker.
@@ -64,7 +64,7 @@ func TestMultipleChecker_Check_ThresholdsConditions(t *testing.T) {
 	logger := &pkgMock.Logger{}
 	logger.On("Debugf", mock.Anything, mock.Anything)
 	ctx := context.TODO()
-	successfulResult := result.Result{
+	successfulResult := result.DefaultResult{
 		Success:     true,
 		SuccessRate: 0.85,
 		Time:        time.Second,

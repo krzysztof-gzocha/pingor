@@ -12,10 +12,10 @@ import (
 )
 
 // Checker is able to aggregate multiple checkers and treat them as single checker.
-// Result will be combination of all the results from individual checkers
+// DefaultResult will be combination of all the results from individual checkers
 type Checker struct {
-	logger               log.LoggerInterface
-	checkers             []check.CheckerInterface
+	logger               log.Logger
+	checkers             []check.Checker
 	successRateThreshold float32
 	successTimeThreshold time.Duration
 	singleCheckTimeout   time.Duration
@@ -23,11 +23,11 @@ type Checker struct {
 
 // NewChecker will return instance of Checker
 func NewChecker(
-	logger log.LoggerInterface,
+	logger log.Logger,
 	singleCheckTimeout time.Duration,
 	successRateThreshold float32,
 	successTimeThreshold time.Duration,
-	checkers ...check.CheckerInterface,
+	checkers ...check.Checker,
 ) Checker {
 	return Checker{
 		logger:               logger,
@@ -40,8 +40,8 @@ func NewChecker(
 
 // Check will run all the checkers, combine their's results into single result and return it.
 // Each checker will run in separate go-routine
-func (c Checker) Check(ctx context.Context) result.ResultInterface {
-	overallResult := result.Result{Success: true}
+func (c Checker) Check(ctx context.Context) result.Result {
+	overallResult := result.DefaultResult{Success: true}
 	var wg sync.WaitGroup
 	for _, checker := range c.checkers {
 		wg.Add(1)
@@ -69,9 +69,9 @@ func (c Checker) Check(ctx context.Context) result.ResultInterface {
 
 func (c Checker) singleCheck(
 	ctx context.Context,
-	checker check.CheckerInterface,
+	checker check.Checker,
 	wg *sync.WaitGroup,
-	overallResult *result.Result,
+	overallResult *result.DefaultResult,
 ) {
 	c.logger.Debugf("%T: Starting checker: %T", c, checker)
 	wrappedCtx, cancelFunc := context.WithTimeout(ctx, c.singleCheckTimeout)

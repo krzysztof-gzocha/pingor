@@ -7,14 +7,14 @@ import (
 	"github.com/krzysztof-gzocha/pingor/pkg/subscriber"
 )
 
-// Persister is a subscriber, that will use another perister.PersisterInterface to store the info about reconnection event
+// Persister is a subscriber, that will use another perister.Persister to store the info about reconnection event
 type Persister struct {
-	logger log.LoggerInterface
-	pr     persister.PersisterInterface
+	logger log.Logger
+	pr     persister.Persister
 }
 
 // NewPersister will return new pr subscriber, which will persist the results after reconnection
-func NewPersister(logger log.LoggerInterface, persister persister.PersisterInterface) *Persister {
+func NewPersister(logger log.Logger, persister persister.Persister) *Persister {
 	return &Persister{logger: logger, pr: persister}
 }
 

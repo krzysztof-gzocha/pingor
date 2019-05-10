@@ -12,11 +12,11 @@ import (
 // CheckerMock is mocking Checker
 type CheckerMock struct {
 	mock.Mock
-	Result result.ResultInterface
+	Result result.Result
 }
 
 // Check is mocking Checker.Check
-func (m CheckerMock) Check(ctx context.Context) result.ResultInterface {
+func (m CheckerMock) Check(ctx context.Context) result.Result {
 	args := m.Called(ctx)
-	return args.Get(0).(result.ResultInterface)
+	return args.Get(0).(result.Result)
 }

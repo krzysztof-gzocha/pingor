@@ -10,20 +10,20 @@ import (
 
 // Checker will try to resolve provided hosts into IPs in order to check the connection to DNS
 type Checker struct {
-	logger log.LoggerInterface
-	dns    ResolverInterface
+	logger log.Logger
+	dns    Resolver
 	host   string
 }
 
 // NewChecker will return new instance of Checker
-func NewChecker(logger log.LoggerInterface, dns ResolverInterface, host string) Checker {
+func NewChecker(logger log.Logger, dns Resolver, host string) Checker {
 	return Checker{logger: logger, dns: dns, host: host}
 }
 
 // Check will try to resolve provided hosts into IPs in order to check the connection to DNS.
 // Time result is average time required to resolve all the hosts.
-func (c Checker) Check(ctx context.Context) result.ResultInterface {
-	res := result.Result{URL: c.host, Success: true}
+func (c Checker) Check(ctx context.Context) result.Result {
+	res := result.DefaultResult{URL: c.host, Success: true}
 	c.logger.
 		WithField("host", c.host).
 		Debugf("%T: starting to check", c)

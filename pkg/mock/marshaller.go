@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// Marshaller is just a mock
+// DynamoMarshaller is just a mock
 type Marshaller struct {
 	mock.Mock
 }

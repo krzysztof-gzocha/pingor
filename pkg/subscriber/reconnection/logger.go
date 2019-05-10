@@ -12,12 +12,12 @@ import (
 
 // Logger contains required things to log information about reconnection to the CLI
 type Logger struct {
-	logger log.LoggerInterface
+	logger log.Logger
 	pr     formatter.Func
 }
 
 // NewLogger will return Logger struct
-func NewLogger(logger log.LoggerInterface, pr formatter.Func) *Logger {
+func NewLogger(logger log.Logger, pr formatter.Func) *Logger {
 	return &Logger{logger: logger, pr: pr}
 }
 

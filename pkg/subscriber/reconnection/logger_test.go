@@ -33,9 +33,9 @@ func TestLogger_LogReconnection_CorrectEvent(t *testing.T) {
 	logger.On("WithField", "currentSuccessRate", mock.Anything)
 	logger.On("WithField", "disconnectionTime", mock.Anything)
 	logger.On("Infof", mock.Anything, mock.Anything)
-	res := result.TimeResult{
+	res := result.DefaultMeasuredAtResult{
 		MeasuredAt: time.Now(),
-		Result:     result.Result{SuccessRate: 1, Success: true},
+		Result:     result.DefaultResult{SuccessRate: 1, Success: true},
 	}
 	assert.NotPanics(t, func() {
 		NewLogger(logger, json.Formatter).LogReconnection(subscriber.ReconnectionEvent{
@@ -58,9 +58,9 @@ func TestLogger_LogReconnection_FormatterError(t *testing.T) {
 	logger.On("WithField", "currentSuccessRate", mock.Anything)
 	logger.On("WithField", "disconnectionTime", mock.Anything)
 	logger.On("Infof", mock.Anything, mock.Anything)
-	res := result.TimeResult{
+	res := result.DefaultMeasuredAtResult{
 		MeasuredAt: time.Now(),
-		Result:     result.Result{SuccessRate: float32(math.NaN()), Success: true},
+		Result:     result.DefaultResult{SuccessRate: float32(math.NaN()), Success: true},
 	}
 	assert.NotPanics(t, func() {
 		NewLogger(logger, json.Formatter).LogReconnection(subscriber.ReconnectionEvent{

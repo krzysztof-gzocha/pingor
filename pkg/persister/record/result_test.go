@@ -23,7 +23,7 @@ func TestTransform_EmptyCurrentResult(t *testing.T) {
 func TestTransform_ExistingCurrentResult(t *testing.T) {
 	now := time.Now()
 	event := subscriber.ReconnectionEvent{
-		CurrentResult: result.TimeResult{
+		CurrentResult: result.DefaultMeasuredAtResult{
 			MeasuredAt: now,
 		},
 	}

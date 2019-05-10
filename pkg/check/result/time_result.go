@@ -2,49 +2,49 @@ package result
 
 import "time"
 
-// TimeResultInterface is expanding default ResultInterface by adding GetMeasuredAt method
-type TimeResultInterface interface {
-	ResultInterface
+// MeasuredAtResult is expanding default Result by adding GetMeasuredAt method
+type MeasuredAtResult interface {
+	Result
 	GetMeasuredAt() time.Time
 }
 
-// TimeResult is kind of wrapper for regular Result with MeasuredAt field
-type TimeResult struct {
-	Result     ResultInterface
+// DefaultMeasuredAtResult is kind of wrapper for regular result with MeasuredAt field
+type DefaultMeasuredAtResult struct {
+	Result     Result
 	MeasuredAt time.Time `json:"measured_at"`
 }
 
 // IsSuccess will return TRUE if measurement was successful
-func (t TimeResult) IsSuccess() bool {
+func (t DefaultMeasuredAtResult) IsSuccess() bool {
 	return t.Result.IsSuccess()
 }
 
 // GetSuccessRate will return success rate >=0 and <=1 as float32
-func (t TimeResult) GetSuccessRate() float32 {
+func (t DefaultMeasuredAtResult) GetSuccessRate() float32 {
 	return t.Result.GetSuccessRate()
 }
 
 // GetTime will return time it took to measure. Could be useful to compare performances
-func (t TimeResult) GetTime() time.Duration {
+func (t DefaultMeasuredAtResult) GetTime() time.Duration {
 	return t.Result.GetTime()
 }
 
 // GetMessage will return additional message added to the result
-func (t TimeResult) GetMessage() string {
+func (t DefaultMeasuredAtResult) GetMessage() string {
 	return t.Result.GetMessage()
 }
 
-// GetSubResults will return array of ResultInterface so it can be used as a group
-func (t TimeResult) GetSubResults() []ResultInterface {
+// GetSubResults will return array of Result so it can be used as a group
+func (t DefaultMeasuredAtResult) GetSubResults() []Result {
 	return t.Result.GetSubResults()
 }
 
 // GetMeasuredAt will return a time where measurement was done
-func (t TimeResult) GetMeasuredAt() time.Time {
+func (t DefaultMeasuredAtResult) GetMeasuredAt() time.Time {
 	return t.MeasuredAt
 }
 
 // GetURL will return testing URL
-func (t TimeResult) GetURL() string {
+func (t DefaultMeasuredAtResult) GetURL() string {
 	return t.Result.GetURL()
 }

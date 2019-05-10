@@ -5,34 +5,34 @@ import (
 	"time"
 )
 
-// ResultInterface should be implemented by all the results objects
-type ResultInterface interface {
+// Result should be implemented by all the results objects
+type Result interface {
 	IsSuccess() bool
 	GetSuccessRate() float32
 	GetTime() time.Duration
 	GetMessage() string
-	GetSubResults() []ResultInterface
+	GetSubResults() []Result
 	GetURL() string
 }
 
-// Result is main data transfer object used to store all the results from checkers
-type Result struct {
-	Success     bool              `json:"success,omitempty"`
-	SuccessRate float32           `json:"success_rate"`
-	Time        time.Duration     `json:"time"`
-	Message     string            `json:"message,omitempty"`
-	SubResults  []ResultInterface `json:"sub_results,omitempty"`
-	URL         string            `json:"url,omitempty"`
+// DefaultResult is main data transfer object used to store all the results from checkers
+type DefaultResult struct {
+	Success     bool          `json:"success,omitempty"`
+	SuccessRate float32       `json:"success_rate"`
+	Time        time.Duration `json:"time"`
+	Message     string        `json:"message,omitempty"`
+	SubResults  []Result      `json:"sub_results,omitempty"`
+	URL         string        `json:"url,omitempty"`
 }
 
-// MarshalJSON will encode Result into JSON with time parsed into string
-func (r Result) MarshalJSON() ([]byte, error) {
+// MarshalJSON will encode DefaultResult into JSON with time parsed into string
+func (r DefaultResult) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Success     bool              `json:"success,omitempty"`
-		SuccessRate float32           `json:"success_rate"`
-		Time        string            `json:"time"`
-		Message     string            `json:"message,omitempty"`
-		SubResults  []ResultInterface `json:"sub_results,omitempty"`
+		Success     bool     `json:"success,omitempty"`
+		SuccessRate float32  `json:"success_rate"`
+		Time        string   `json:"time"`
+		Message     string   `json:"message,omitempty"`
+		SubResults  []Result `json:"sub_results,omitempty"`
 	}{
 		Success:     r.Success,
 		SuccessRate: r.SuccessRate,
@@ -43,32 +43,32 @@ func (r Result) MarshalJSON() ([]byte, error) {
 }
 
 // IsSuccess will return true if connection check was successful
-func (r Result) IsSuccess() bool {
+func (r DefaultResult) IsSuccess() bool {
 	return r.Success
 }
 
 // GetSuccessRate will return ratio of success check to all the checks
-func (r Result) GetSuccessRate() float32 {
+func (r DefaultResult) GetSuccessRate() float32 {
 	return r.SuccessRate
 }
 
 // GetTime will return time taken in all the checks
-func (r Result) GetTime() time.Duration {
+func (r DefaultResult) GetTime() time.Duration {
 	return r.Time
 }
 
 // GetMessage is useful to create human-readable reports
-func (r Result) GetMessage() string {
+func (r DefaultResult) GetMessage() string {
 	return r.Message
 }
 
 // GetSubResults will return all (if any) sub-results that were combined into this object.
 // Might be useful for human-readable reports
-func (r Result) GetSubResults() []ResultInterface {
+func (r DefaultResult) GetSubResults() []Result {
 	return r.SubResults
 }
 
 // GetURL will return testing URL
-func (r Result) GetURL() string {
+func (r DefaultResult) GetURL() string {
 	return r.URL
 }
