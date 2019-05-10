@@ -90,6 +90,12 @@ scrape_configs:
       - targets: ['127.0.0.1:9111'] # Port needs to be the same as configured in pingor
 ```
 
+# Prometheus metrics
+PingGOr metrics endpoint is exposing golang related metrics and network stability metrics:
+- `http_pingor_success_rate` - 0-100 percentage rate of success
+- `http_pingor_response_times_seconds` - seconds it took for each host to check for HTTP stauts
+- `dns_pingor_response_times_seconds` - seconds it took for each host to resolve to IP
+
 # Using AWS DynamoDB
 In order to persist reconnection events to AWS DynamoDB you have to specify your access and secret keys as environment variables.
 If you are running pinGOr with the help of systemd you can specify them in `pingor.service` file.

@@ -18,13 +18,13 @@ var (
 	)
 
 	httpResponsesTimes = promauto.NewGaugeVec(prometheus.GaugeOpts(prometheus.Opts{
-		Name: "http_pingor_response_times_ns",
-		Help: "HTTP response time presented in nano seconds",
+		Name: "http_pingor_response_times_seconds",
+		Help: "HTTP response time presented in seconds",
 	}), []string{"url"})
 
 	dnsResponsesTimes = promauto.NewGaugeVec(prometheus.GaugeOpts(prometheus.Opts{
-		Name: "dns_pingor_response_times_ns",
-		Help: "DNS response time presented in nano seconds",
+		Name: "dns_pingor_response_times_seconds",
+		Help: "DNS response time presented in seconds",
 	}), []string{"url"})
 )
 
@@ -61,7 +61,7 @@ func (i *InstrumentedGaugeChecker) Check(ctx context.Context) result.Result {
 	checkResult := i.checker.Check(ctx)
 	i.gauge.
 		WithLabelValues(checkResult.GetURL()).
-		Set(float64(checkResult.GetTime().Nanoseconds()))
+		Set(float64(checkResult.GetTime().Seconds()))
 
 	return checkResult
 }
